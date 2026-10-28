@@ -51,6 +51,11 @@
     flex-direction:column;
     align-items:center;
   }
+  .topbar.compact{
+    min-height:calc(env(safe-area-inset-top) + 58px);
+    justify-content:center;
+  }
+  .topbar.compact .brand-sub{ font-size:.86rem; font-weight:800; color:var(--text); }
   .brand-logo{
     width:84%;
     max-width:400px;
@@ -298,6 +303,256 @@
   }
   .empty-box p{ margin:0; font-size:.85rem; line-height:1.5; }
 
+  .hoy-banner{
+    flex:0 0 auto;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    width:calc(100% - 20px);
+    max-width:540px;
+    margin:2px auto 6px;
+    padding:7px 12px;
+    border:1px solid rgba(255,140,26,.38);
+    border-radius:12px;
+    background:rgba(255,140,26,.12);
+    color:var(--text);
+    font:inherit;
+    text-align:left;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  .hoy-banner:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; }
+  .hoy-text{ flex:1 1 auto; min-width:0; }
+  .hoy-label{
+    display:block;
+    font-size:.62rem;
+    font-weight:800;
+    letter-spacing:.08em;
+    text-transform:uppercase;
+    color:var(--accent-2);
+  }
+  .hoy-main{
+    display:block;
+    margin-top:1px;
+    font-size:.98rem;
+    font-weight:800;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+  }
+  .hoy-arrow{ flex:0 0 auto; color:var(--text-dim); }
+  .card.mine .card-front{
+    border-color:var(--accent);
+    box-shadow:0 0 0 1px var(--accent) inset, 0 8px 18px -12px rgba(0,0,0,.7);
+  }
+  .card.mine .card-num{ background:var(--accent); color:#1c1200; border-color:var(--accent); }
+
+  .page-view{
+    flex:1 1 auto;
+    min-height:0;
+    overflow-y:auto;
+    padding:4px 10px calc(env(safe-area-inset-bottom) + 18px);
+  }
+  .page{ max-width:560px; margin:0 auto; }
+  .page-empty{
+    margin-top:24px;
+    padding:28px 20px;
+    border:1.5px dashed rgba(255,255,255,.16);
+    border-radius:18px;
+    text-align:center;
+    color:var(--text-dim);
+    font-size:.88rem;
+    line-height:1.5;
+  }
+  .page-empty strong{ display:block; color:var(--text); font-size:1rem; margin-bottom:6px; }
+  .page-title{ margin:4px 2px 4px; font-size:1.15rem; font-weight:800; }
+  .page-hint{ margin:0 2px 12px; font-size:.82rem; color:var(--text-dim); line-height:1.45; }
+
+  .chip-row{
+    display:flex;
+    gap:6px;
+    overflow-x:auto;
+    padding:2px 2px 8px;
+    scrollbar-width:none;
+  }
+  .chip-row::-webkit-scrollbar{ display:none; }
+  .chip{
+    flex:0 0 auto;
+    min-height:34px;
+    padding:6px 12px;
+    border:1px solid var(--border);
+    border-radius:999px;
+    background:rgba(255,255,255,.04);
+    color:var(--text-dim);
+    font:inherit;
+    font-size:.8rem;
+    font-weight:800;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  .chip.active{ background:rgba(255,140,26,.15); border-color:rgba(255,140,26,.45); color:var(--accent-2); }
+  .chip:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; }
+
+  .cuad-head{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; padding:0 2px 8px; }
+  .cuad-title{ font-size:1.2rem; font-weight:800; }
+  .cuad-sub{ font-size:.76rem; color:var(--text-dim); text-align:right; }
+
+  .yo-box{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:8px 10px;
+    margin-bottom:8px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:linear-gradient(155deg, var(--surface-2), var(--surface));
+    font-size:.82rem;
+    font-weight:700;
+    color:var(--text-dim);
+  }
+  .yo-box select{
+    flex:1 1 auto;
+    min-width:0;
+    min-height:38px;
+    padding:6px 10px;
+    border:1px solid rgba(255,140,26,.38);
+    border-radius:10px;
+    background:#0f1216;
+    color:var(--text);
+    font:inherit;
+    font-size:.95rem;
+    font-weight:800;
+  }
+
+  .mi-semana{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(0, 1fr));
+    gap:5px;
+    margin-bottom:10px;
+  }
+  .mi-dia{
+    min-width:0;
+    padding:6px 4px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    background:rgba(255,255,255,.03);
+    color:var(--text);
+    font:inherit;
+    text-align:center;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  .mi-dia.hoy{ border-color:var(--accent); background:rgba(255,140,26,.13); }
+  .mi-dia:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; }
+  .mi-dia-label{ display:block; font-size:.62rem; font-weight:800; color:var(--text-dim); }
+  .mi-dia-faena{ display:block; margin-top:2px; font-size:.7rem; font-weight:800; line-height:1.15; word-break:break-word; }
+
+  .day-tabs{ display:flex; gap:5px; margin-bottom:8px; }
+  .day-tab{
+    flex:1 1 0;
+    min-width:0;
+    min-height:44px;
+    padding:4px 2px;
+    border:1px solid var(--border);
+    border-radius:10px;
+    background:rgba(255,255,255,.04);
+    color:var(--text-dim);
+    font:inherit;
+    font-size:.78rem;
+    font-weight:800;
+    line-height:1.15;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  .day-tab small{ display:block; font-size:.62rem; font-weight:700; }
+  .day-tab.active{ background:var(--accent); border-color:var(--accent); color:#1c1200; }
+  .day-tab.hoy:not(.active){ border-color:rgba(255,140,26,.55); color:var(--accent-2); }
+  .day-tab:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; }
+
+  .cuad-row{
+    display:grid;
+    grid-template-columns:minmax(0, 1.25fr) minmax(0, .95fr) minmax(0, 1.1fr);
+    align-items:center;
+    gap:8px;
+    padding:9px 10px;
+    margin-bottom:5px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:linear-gradient(155deg, var(--surface-2), var(--surface));
+  }
+  .cuad-row.mine{ border-color:var(--accent); box-shadow:0 0 0 1px var(--accent) inset; }
+  .cuad-faena{ font-size:.9rem; font-weight:800; line-height:1.15; word-break:break-word; }
+  .cuad-persona{ font-size:.86rem; font-weight:800; color:var(--accent-2); word-break:break-word; }
+  .cuad-persona.vacia{ color:var(--text-dim); font-weight:600; }
+  .cuad-maquina{ font-size:.8rem; font-weight:700; text-align:right; word-break:break-word; }
+  .cuad-row small{ display:block; margin-top:2px; font-size:.64rem; font-weight:600; color:var(--text-dim); }
+  .cuad-foot{ margin-top:10px; font-size:.7rem; color:var(--text-dim); text-align:center; }
+
+  .file-pick{
+    position:relative;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:56px;
+    border:1.5px dashed rgba(255,140,26,.5);
+    border-radius:14px;
+    background:rgba(255,140,26,.08);
+    color:var(--accent-2);
+    font-weight:800;
+    cursor:pointer;
+  }
+  .file-pick input{ position:absolute; inset:0; opacity:0; cursor:pointer; }
+  .file-pick:focus-within{ outline:3px solid var(--accent-2); outline-offset:2px; }
+  .msg{ margin:10px 2px; font-size:.84rem; line-height:1.45; color:var(--text-dim); }
+  .msg:empty{ display:none; }
+  .msg.error{ color:#ff8a80; }
+  .msg.ok{ color:#7ee2a8; font-weight:700; }
+  .field-row{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin:6px 2px 10px; }
+  .field{ display:flex; flex-direction:column; gap:5px; margin:12px 2px 0; font-size:.8rem; font-weight:700; color:var(--text-dim); }
+  .field-row label{ display:flex; align-items:center; gap:8px; font-size:.8rem; font-weight:700; color:var(--text-dim); }
+  .field input, .field-row input{
+    min-height:42px;
+    padding:8px 12px;
+    border:1px solid rgba(255,140,26,.38);
+    border-radius:10px;
+    background:#0f1216;
+    color:var(--text);
+    font:inherit;
+    font-size:1rem;
+    font-weight:800;
+  }
+  .field-row input{ width:76px; }
+  .field-note{ font-size:.76rem; color:var(--text-dim); }
+  .field-note.warn{ color:#ffcc80; }
+  .preview-scroll{ overflow-x:auto; border:1px solid var(--border); border-radius:12px; }
+  .preview-table{ width:100%; border-collapse:collapse; font-size:.72rem; }
+  .preview-table th, .preview-table td{
+    padding:6px 7px;
+    border-bottom:1px solid var(--border);
+    text-align:left;
+    vertical-align:top;
+    white-space:nowrap;
+  }
+  .preview-table th{ position:sticky; top:0; background:var(--surface-2); color:var(--accent-2); font-weight:800; }
+  .preview-table td:first-child{ font-weight:800; }
+  .btn-primary{
+    width:100%;
+    min-height:50px;
+    margin-top:14px;
+    border:0;
+    border-radius:12px;
+    background:var(--accent);
+    color:#1c1200;
+    font:inherit;
+    font-size:1rem;
+    font-weight:900;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  .btn-primary:disabled{ opacity:.6; cursor:default; }
+  .btn-primary:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; }
+  .drawer-sep{ height:1px; margin:6px 10px 12px; background:var(--border); }
+
   .inapp-banner{
     max-width:560px;
     width:calc(100% - 20px);
@@ -322,7 +577,7 @@
     padding:0 10px calc(env(safe-area-inset-bottom) + 8px);
     display:grid;
     grid-template-columns:repeat(2, 1fr);
-    grid-template-rows:repeat(6, 1fr);
+    grid-auto-rows:minmax(64px, 1fr);
     gap:6px;
     overflow-y:auto;
   }
@@ -491,7 +746,35 @@
   </div>
 </header>
 
+<button class="hoy-banner" id="hoy-banner" type="button" hidden></button>
 <main class="list" id="list"></main>
+
+<section class="page-view" id="view-cuadrante" hidden>
+  <div class="page" id="cuadrante"></div>
+</section>
+
+<section class="page-view" id="view-subir" hidden>
+  <div class="page">
+    <h2 class="page-title">Subir cuadrante</h2>
+    <p class="page-hint">Elige el Excel del cuadrante. Antes de publicarlo verás cómo se ha leído; al publicarlo lo ven todos al momento.</p>
+    <label class="file-pick">
+      <input type="file" id="subir-archivo" accept=".xlsx,.xls,.xlsm,.ods,.csv">
+      <span id="subir-archivo-texto">📄 Elegir Excel</span>
+    </label>
+    <div class="msg" id="subir-msg" role="status" aria-live="polite"></div>
+    <div id="subir-preview" hidden>
+      <div class="field-row">
+        <label>Semana (KW) <input id="subir-kw" type="number" min="1" max="53" inputmode="numeric"></label>
+        <span class="field-note" id="subir-fechas"></span>
+      </div>
+      <div class="preview-scroll"><table class="preview-table" id="subir-tabla"></table></div>
+      <label class="field">PIN de subida
+        <input id="subir-pin" type="password" inputmode="numeric" autocomplete="off" enterkeyhint="send">
+      </label>
+      <button class="btn-primary" id="subir-publicar" type="button">Publicar</button>
+    </div>
+  </div>
+</section>
 
 <section class="empty-view" id="view-qr" hidden>
   <div class="empty-box">
@@ -528,6 +811,10 @@
     <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19"><path d="M3.5 11.2 12 4l8.5 7.2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M6 10.4V20h12v-9.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
     Inicio
   </button>
+  <button class="drawer-item" type="button" data-view="cuadrante">
+    <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19"><rect x="4" y="5.5" width="16" height="14.5" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4M9.5 10v10M14.5 10v10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    Cuadrante
+  </button>
   <button class="drawer-item" type="button" data-view="qr">
     <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 14h3v3h-3zM17 17h3v3h-3z" fill="currentColor"/></svg>
     QR
@@ -535,6 +822,11 @@
   <button class="drawer-item" type="button" data-view="claves">
     <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19"><circle cx="8" cy="12" r="3.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M11.6 12H20.2M17.4 12v3.2M20.2 12v2.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
     Claves
+  </button>
+  <div class="drawer-sep" role="presentation"></div>
+  <button class="drawer-item" type="button" data-view="subir">
+    <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 14.5v4a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    Subir cuadrante
   </button>
 </nav>
 
@@ -548,7 +840,8 @@
 </div>
 
 <script>
-  const FAENAS = [
+  // Lista fija que se usa mientras no haya ningún cuadrante publicado.
+  const FAENAS_BASE = [
     { codigo:"30-38 NO",             tractora:"STILL 00632",     id:"T08 CP · URBAN 014" },
     { codigo:"31 NO",                tractora:"J-50070",          id:"T08 ML1 · 001" },
     { codigo:"33 NO",                tractora:"J-50079",          id:"ML1 · URBAN 003" },
@@ -562,6 +855,7 @@
     { codigo:"32 (35) - WN",         tractora:"STILL 00644",      id:"T08 CP · URB 013" },
     { codigo:"39 (37) - WN",         tractora:"STILL 00645",      id:"T08 CP · URB 002" }
   ];
+  let FAENAS = FAENAS_BASE;
 
   function escapeHtml(str){
     return String(str).replace(/[&<>"']/g, c => ({
@@ -620,13 +914,17 @@
   const drawerItems = Array.from(drawer.querySelectorAll(".drawer-item"));
   const appViews = {
     inicio: document.getElementById("list"),
+    cuadrante: document.getElementById("view-cuadrante"),
     qr: document.getElementById("view-qr"),
-    claves: document.getElementById("view-claves")
+    claves: document.getElementById("view-claves"),
+    subir: document.getElementById("view-subir")
   };
   const viewSubtitles = {
     inicio: "Toca tu faena para ver la máquina",
+    cuadrante: "Cuadrante semanal",
     qr: "Apartado QR",
-    claves: "Apartado Claves"
+    claves: "Apartado Claves",
+    subir: "Subir cuadrante"
   };
   const brandSub = document.querySelector(".brand-sub");
   const brandLogo = document.getElementById("brand-logo");
@@ -647,7 +945,13 @@
     }
     brandSub.textContent = viewSubtitles[name];
     brandLogo.hidden = name !== "inicio";
+    brandLogo.closest(".topbar").classList.toggle("compact", name !== "inicio");
     searchButton.hidden = name !== "inicio";
+    renderHoy();
+    if (name === "cuadrante") {
+      renderCuadrante();
+      cargarSemanas();
+    }
     setDrawer(false);
   }
 
@@ -725,6 +1029,452 @@
     if (!card.classList.contains("flipped")) toggleCard(card);
     card.scrollIntoView({ block:"nearest", behavior:"smooth" });
   });
+
+  // ---- Cuadrante semanal: se guarda en Supabase (función "cuadrante") ----
+  const CUADRANTE_URL = "https://hfdakziguloigiyjupfu.supabase.co/functions/v1/cuadrante";
+  const SUPABASE_KEY = "sb_publishable_piaJBm6Lr2uZHIA4uIVyhA_H7kSS5TD";
+  const XLSX_URL = "https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js";
+  const DIAS_SEMANA = [
+    { re:/^LUN/i, corto:"L" }, { re:/^MAR/i, corto:"M" }, { re:/^MI[EÉ]/i, corto:"X" },
+    { re:/^JUE/i, corto:"J" }, { re:/^VIE/i, corto:"V" }, { re:/^S[AÁ]B/i, corto:"S" }, { re:/^DOM/i, corto:"D" }
+  ];
+  const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+
+  const leerLocal = (clave, porDefecto) => {
+    try {
+      const valor = localStorage.getItem(clave);
+      return valor === null ? porDefecto : JSON.parse(valor);
+    } catch { return porDefecto; }
+  };
+  const guardarLocal = (clave, valor) => {
+    try { localStorage.setItem(clave, JSON.stringify(valor)); } catch {}
+  };
+
+  const hoyBanner = document.getElementById("hoy-banner");
+  const cuadranteBox = document.getElementById("cuadrante");
+  let semanas = prepararSemanas(leerLocal("cl1-semanas", []));
+  let yo = leerLocal("cl1-yo", "");
+  let semanaVista = null;
+  let diaVisto = null;
+
+  function prepararSemanas(lista){
+    if (!Array.isArray(lista)) return [];
+    return lista
+      .filter(s => s && Number.isInteger(s.anio) && Number.isInteger(s.kw) && Array.isArray(s.datos?.filas) && Array.isArray(s.datos?.dias))
+      .map(s => ({
+        ...s,
+        datos:{
+          dias:s.datos.dias.map(String),
+          filas:s.datos.filas.map(f => ({
+            codigo:String(f.codigo || ""),
+            nota:String(f.nota || ""),
+            personas:Array.isArray(f.personas) ? f.personas.map(p => String(p || "")) : [],
+            tractora:String(f.tractora || ""),
+            id:String(f.id || "")
+          }))
+        }
+      }))
+      .sort((a, b) => (b.anio * 100 + b.kw) - (a.anio * 100 + a.kw));
+  }
+
+  function semanaIso(fecha){
+    const d = new Date(Date.UTC(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    const anio = d.getUTCFullYear();
+    return { anio, kw:Math.ceil(((d - Date.UTC(anio, 0, 1)) / 86400000 + 1) / 7) };
+  }
+  function lunesDeSemana(anio, kw){
+    const d = new Date(Date.UTC(anio, 0, 4));
+    d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() || 7) - 1) + (kw - 1) * 7);
+    return d;
+  }
+  // Año en el que el lunes de esa KW queda más cerca de hoy.
+  function anioDeKw(kw){
+    const ahora = Date.now();
+    const anio = new Date().getFullYear();
+    return [anio - 1, anio, anio + 1]
+      .sort((a, b) => Math.abs(lunesDeSemana(a, kw) - ahora) - Math.abs(lunesDeSemana(b, kw) - ahora))[0];
+  }
+  const fechaCorta = d => `${d.getUTCDate()} ${MESES[d.getUTCMonth()]}`;
+  const sumarDias = (d, n) => new Date(d.getTime() + n * 86400000);
+  const capitalizar = s => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
+  const claveSemana = s => `${s.anio}-${s.kw}`;
+  const mismaPersona = (a, b) => normalize(a) !== "" && normalize(a) === normalize(b);
+  const indiceDia = etiqueta => DIAS_SEMANA.findIndex(d => d.re.test(String(etiqueta).trim()));
+  const etiquetaCorta = etiqueta => {
+    const i = indiceDia(etiqueta);
+    const numero = String(etiqueta).match(/\d+/)?.[0] || "";
+    return { letra:i >= 0 ? DIAS_SEMANA[i].corto : String(etiqueta).slice(0, 3), numero };
+  };
+
+  function semanaActual(){
+    const hoy = semanaIso(new Date());
+    return semanas.find(s => s.anio === hoy.anio && s.kw === hoy.kw) || null;
+  }
+  // La de esta semana; si no hay, la última ya pasada; si solo hay futuras, la más cercana.
+  function semanaActiva(){
+    const hoy = semanaIso(new Date());
+    const valor = hoy.anio * 100 + hoy.kw;
+    return semanaActual() || semanas.find(s => s.anio * 100 + s.kw <= valor) || semanas[semanas.length - 1] || null;
+  }
+  function columnaDeHoy(semana){
+    if (!semana || semana !== semanaActual()) return -1;
+    const hoy = (new Date().getDay() + 6) % 7;
+    return semana.datos.dias.findIndex(d => indiceDia(d) === hoy);
+  }
+
+  function aplicarSemana(){
+    const activa = semanaActiva();
+    FAENAS = activa ? activa.datos.filas : FAENAS_BASE;
+    openCard = null;
+    render();
+    renderHoy();
+    if (!appViews.cuadrante.hidden) renderCuadrante();
+  }
+
+  function renderHoy(){
+    document.querySelectorAll("#list .card.mine").forEach(c => c.classList.remove("mine"));
+    const activa = semanaActual();
+    const col = columnaDeHoy(activa);
+    if (!yo || col < 0 || appViews.inicio.hidden){
+      hoyBanner.hidden = true;
+      return;
+    }
+    const i = activa.datos.filas.findIndex(f => mismaPersona(f.personas[col], yo));
+    const dia = capitalizar(activa.datos.dias[col]);
+    if (i < 0){
+      hoyBanner.innerHTML = `<span class="hoy-text"><span class="hoy-label">Hoy · ${escapeHtml(dia)}</span><span class="hoy-main">No apareces en el cuadrante</span></span>`;
+    } else {
+      const f = activa.datos.filas[i];
+      hoyBanner.innerHTML = `
+        <span class="hoy-text">
+          <span class="hoy-label">Hoy · ${escapeHtml(dia)} · ${escapeHtml(yo)}</span>
+          <span class="hoy-main">${escapeHtml(f.codigo)} → ${escapeHtml(f.tractora || "sin máquina")}</span>
+        </span>
+        <svg class="hoy-arrow" aria-hidden="true" viewBox="0 0 24 24" width="16" height="16"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      document.querySelectorAll("#list .card")[i]?.classList.add("mine");
+    }
+    hoyBanner.dataset.index = String(i);
+    hoyBanner.hidden = false;
+  }
+
+  hoyBanner.addEventListener("click", () => {
+    const card = document.querySelectorAll("#list .card")[Number(hoyBanner.dataset.index)];
+    if (!card) return;
+    if (!card.classList.contains("flipped")) toggleCard(card);
+    card.scrollIntoView({ block:"nearest", behavior:"smooth" });
+  });
+
+  function relacionConHoy(semana){
+    const hoy = semanaIso(new Date());
+    const dif = Math.round((lunesDeSemana(semana.anio, semana.kw) - lunesDeSemana(hoy.anio, hoy.kw)) / (7 * 86400000));
+    if (dif === 0) return "Esta semana";
+    if (dif === 1) return "La semana que viene";
+    if (dif === -1) return "La semana pasada";
+    return dif > 0 ? `Dentro de ${dif} semanas` : `Hace ${-dif} semanas`;
+  }
+
+  function renderCuadrante(){
+    if (!semanas.length){
+      cuadranteBox.innerHTML = `
+        <div class="page-empty">
+          <strong>Todavía no hay cuadrante</strong>
+          Cuando se publique el de esta semana aparecerá aquí.
+        </div>`;
+      return;
+    }
+
+    const semana = semanas.find(s => claveSemana(s) === semanaVista) || semanaActiva();
+    semanaVista = claveSemana(semana);
+    const { dias, filas } = semana.datos;
+    const hoyCol = columnaDeHoy(semana);
+    if (diaVisto === null || diaVisto >= dias.length) diaVisto = hoyCol >= 0 ? hoyCol : 0;
+
+    const nombres = [...new Map(
+      filas.flatMap(f => f.personas).map(p => p.trim()).filter(Boolean).map(p => [normalize(p), p])
+    ).values()].sort((a, b) => a.localeCompare(b, "es"));
+    if (yo && !nombres.some(n => mismaPersona(n, yo))) nombres.unshift(yo);
+
+    const lunes = lunesDeSemana(semana.anio, semana.kw);
+    const rango = `${fechaCorta(lunes)} – ${fechaCorta(sumarDias(lunes, dias.length - 1))}`;
+
+    const chips = semanas.length > 1 ? `
+      <div class="chip-row" role="tablist" aria-label="Semanas publicadas">
+        ${semanas.map(s => `<button class="chip ${claveSemana(s) === semanaVista ? "active" : ""}" type="button" role="tab" aria-selected="${claveSemana(s) === semanaVista}" data-semana="${claveSemana(s)}">KW ${s.kw}</button>`).join("")}
+      </div>` : "";
+
+    const miSemana = yo ? `
+      <div class="mi-semana" aria-label="Tu semana">
+        ${dias.map((d, c) => {
+          const f = filas.find(f => mismaPersona(f.personas[c], yo));
+          const { letra, numero } = etiquetaCorta(d);
+          return `<button class="mi-dia ${c === hoyCol ? "hoy" : ""}" type="button" data-dia="${c}">
+            <span class="mi-dia-label">${escapeHtml(letra)} ${escapeHtml(numero)}</span>
+            <span class="mi-dia-faena">${f ? escapeHtml(f.codigo) : "—"}</span>
+          </button>`;
+        }).join("")}
+      </div>` : "";
+
+    const pestanas = dias.map((d, c) => {
+      const { letra, numero } = etiquetaCorta(d);
+      return `<button class="day-tab ${c === diaVisto ? "active" : ""} ${c === hoyCol ? "hoy" : ""}" type="button" role="tab" aria-selected="${c === diaVisto}" data-dia="${c}">
+        ${escapeHtml(letra)}<small>${c === hoyCol ? "hoy" : escapeHtml(numero)}</small>
+      </button>`;
+    }).join("");
+
+    const filasDia = filas.map(f => {
+      const persona = (f.personas[diaVisto] || "").trim();
+      return `<div class="cuad-row ${yo && mismaPersona(persona, yo) ? "mine" : ""}">
+        <div class="cuad-faena">${escapeHtml(f.codigo)}${f.nota ? `<small>${escapeHtml(f.nota)}</small>` : ""}</div>
+        <div class="cuad-persona ${persona ? "" : "vacia"}">${persona ? escapeHtml(persona) : "—"}</div>
+        <div class="cuad-maquina">${escapeHtml(f.tractora)}${f.id ? `<small>${escapeHtml(f.id)}</small>` : ""}</div>
+      </div>`;
+    }).join("");
+
+    const publicado = semana.publicado ? new Date(semana.publicado) : null;
+    cuadranteBox.innerHTML = `
+      ${chips}
+      <div class="cuad-head">
+        <div class="cuad-title">Semana ${semana.kw}</div>
+        <div class="cuad-sub">${escapeHtml(rango)}<br>${escapeHtml(relacionConHoy(semana))}</div>
+      </div>
+      <label class="yo-box">Soy
+        <select id="yo-select" aria-label="Tu nombre">
+          <option value="">Elige tu nombre…</option>
+          ${nombres.map(n => `<option value="${escapeHtml(n)}" ${mismaPersona(n, yo) ? "selected" : ""}>${escapeHtml(n)}</option>`).join("")}
+        </select>
+      </label>
+      ${miSemana}
+      <div class="day-tabs" role="tablist" aria-label="Días">${pestanas}</div>
+      ${filasDia}
+      ${publicado && !isNaN(publicado) ? `<div class="cuad-foot">Publicado el ${publicado.toLocaleDateString("es-ES")} a las ${publicado.toLocaleTimeString("es-ES", { hour:"2-digit", minute:"2-digit" })}</div>` : ""}`;
+  }
+
+  cuadranteBox.addEventListener("click", e => {
+    const chip = e.target.closest("[data-semana]");
+    const dia = e.target.closest("[data-dia]");
+    if (chip){
+      semanaVista = chip.dataset.semana;
+      diaVisto = null;
+    } else if (dia){
+      diaVisto = Number(dia.dataset.dia);
+    } else return;
+    renderCuadrante();
+  });
+  cuadranteBox.addEventListener("change", e => {
+    if (e.target.id !== "yo-select") return;
+    yo = e.target.value;
+    guardarLocal("cl1-yo", yo);
+    renderCuadrante();
+    renderHoy();
+  });
+
+  let ultimaCarga = 0;
+  async function cargarSemanas(forzar = false){
+    if (!forzar && Date.now() - ultimaCarga < 20000) return;
+    ultimaCarga = Date.now();
+    try {
+      const res = await fetch(CUADRANTE_URL, { headers:{ apikey:SUPABASE_KEY }, cache:"no-store" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const respuesta = await res.json();
+      semanas = prepararSemanas(respuesta.semanas);
+      guardarLocal("cl1-semanas", semanas);
+      aplicarSemana();
+    } catch (err) {
+      console.warn("No se pudo cargar el cuadrante.", err);
+    }
+  }
+
+  // ---- Subir cuadrante desde un Excel ----
+  const subirArchivo = document.getElementById("subir-archivo");
+  const subirArchivoTexto = document.getElementById("subir-archivo-texto");
+  const subirMsg = document.getElementById("subir-msg");
+  const subirPreview = document.getElementById("subir-preview");
+  const subirKw = document.getElementById("subir-kw");
+  const subirFechas = document.getElementById("subir-fechas");
+  const subirTabla = document.getElementById("subir-tabla");
+  const subirPin = document.getElementById("subir-pin");
+  const subirPublicar = document.getElementById("subir-publicar");
+  let leido = null;
+
+  function mensajeSubida(texto, tipo = ""){
+    subirMsg.textContent = texto;
+    subirMsg.className = `msg ${tipo}`;
+  }
+
+  function cargarXlsx(){
+    if (window.XLSX) return Promise.resolve(window.XLSX);
+    return new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = XLSX_URL;
+      script.onload = () => resolve(window.XLSX);
+      script.onerror = () => reject(new Error("No se pudo cargar el lector de Excel. Comprueba la conexión."));
+      document.head.appendChild(script);
+    });
+  }
+
+  const lineas = valor => String(valor ?? "").replace(/\r/g, "").split("\n").map(l => l.replace(/\s+/g, " ").trim()).filter(Boolean);
+
+  // Busca la fila de cabecera (la que tiene LUNES…) y lee las faenas que hay debajo hasta "AUSENCIAS".
+  function leerCuadrante(XLSX, libro){
+    for (const nombreHoja of libro.SheetNames){
+      const tabla = XLSX.utils.sheet_to_json(libro.Sheets[nombreHoja], { header:1, defval:"", raw:false, blankrows:true });
+      const filaCab = tabla.findIndex(fila => fila.some(c => /^LUNES/i.test(String(c).trim())));
+      if (filaCab < 0) continue;
+
+      const cabecera = tabla[filaCab].map(c => lineas(c).join(" "));
+      const colDias = cabecera.map((c, i) => indiceDia(c) >= 0 ? i : -1).filter(i => i >= 0);
+      const colTractora = cabecera.findIndex(c => /TRACTORA|M[AÁ]QUINA/i.test(c));
+      const colId = cabecera.findIndex(c => /^ID\b|SEAT/i.test(c));
+      const colFaena = Math.max(0, colDias[0] - 1);
+
+      const filas = [];
+      for (const fila of tabla.slice(filaCab + 1)){
+        const texto = lineas(fila[colFaena]);
+        if (texto.length && /^AUSENCIA/i.test(texto[0])) break;
+        const personas = colDias.map(i => lineas(fila[i]).join(" "));
+        const tractora = colTractora >= 0 ? lineas(fila[colTractora]).join(" ") : "";
+        if (!texto.length || (!tractora && !personas.some(Boolean))) continue;
+
+        // Las líneas que empiezan en minúscula o "+" son notas ("excepto…", "+ Cinturones…").
+        let codigo = texto[0];
+        const notas = [];
+        for (const l of texto.slice(1)){
+          if (/^[a-záéíóúñ+]/.test(l)) notas.push(l);
+          else codigo += ` ${l}`;
+        }
+        filas.push({
+          codigo,
+          nota:notas.join(" "),
+          personas,
+          tractora,
+          id:colId >= 0 ? lineas(fila[colId]).join(" · ") : ""
+        });
+      }
+
+      const textoKw = [nombreHoja, ...tabla.slice(0, filaCab + 1).flat()].map(String).join(" ");
+      const kw = Number(textoKw.match(/\bKW\s*(\d{1,2})\b/i)?.[1]) || null;
+      return { kw, dias:colDias.map(i => cabecera[i]), filas };
+    }
+    return null;
+  }
+
+  function actualizarFechasSubida(){
+    const kw = Number(subirKw.value);
+    if (!leido || !Number.isInteger(kw) || kw < 1 || kw > 53){
+      subirFechas.textContent = "Pon el número de semana";
+      subirFechas.className = "field-note warn";
+      return;
+    }
+    const anio = anioDeKw(kw);
+    const lunes = lunesDeSemana(anio, kw);
+    const numeroExcel = Number(String(leido.dias[0] || "").match(/\d+/)?.[0]);
+    const cuadra = !numeroExcel || numeroExcel === lunes.getUTCDate();
+    subirFechas.textContent = cuadra
+      ? `${fechaCorta(lunes)} – ${fechaCorta(sumarDias(lunes, 4))} ${anio}`
+      : `Ojo: la KW ${kw} empieza el lunes ${fechaCorta(lunes)}, y el Excel pone "${leido.dias[0]}"`;
+    subirFechas.className = `field-note ${cuadra ? "" : "warn"}`;
+  }
+
+  subirArchivo.addEventListener("change", async () => {
+    const archivo = subirArchivo.files[0];
+    if (!archivo) return;
+    leido = null;
+    subirPreview.hidden = true;
+    subirArchivoTexto.textContent = `📄 ${archivo.name}`;
+    mensajeSubida("Leyendo el Excel…");
+    try {
+      const XLSX = await cargarXlsx();
+      const libro = XLSX.read(await archivo.arrayBuffer(), { type:"array" });
+      leido = leerCuadrante(XLSX, libro);
+      if (!leido || !leido.filas.length || !leido.dias.length){
+        leido = null;
+        mensajeSubida("No he encontrado el cuadrante en ese archivo. Tiene que tener una fila con LUNES, MARTES… y las faenas debajo.", "error");
+        return;
+      }
+    } catch (err) {
+      mensajeSubida(err.message || "No se pudo leer el archivo.", "error");
+      return;
+    }
+
+    subirTabla.innerHTML = `
+      <thead><tr>
+        <th>Faena</th>
+        ${leido.dias.map(d => { const { letra, numero } = etiquetaCorta(d); return `<th>${escapeHtml(letra)} ${escapeHtml(numero)}</th>`; }).join("")}
+        <th>Máquina</th>
+      </tr></thead>
+      <tbody>
+        ${leido.filas.map(f => `<tr>
+          <td>${escapeHtml(f.codigo)}</td>
+          ${f.personas.map(p => `<td>${escapeHtml(p || "—")}</td>`).join("")}
+          <td>${escapeHtml(f.tractora)}</td>
+        </tr>`).join("")}
+      </tbody>`;
+    subirKw.value = leido.kw || "";
+    actualizarFechasSubida();
+    mensajeSubida(`He leído ${leido.filas.length} faenas y ${leido.dias.length} días. Revisa que esté bien, pon el PIN y publica.`);
+    subirPreview.hidden = false;
+  });
+
+  subirKw.addEventListener("input", actualizarFechasSubida);
+  subirPin.addEventListener("keydown", e => {
+    if (e.key === "Enter") subirPublicar.click();
+  });
+
+  subirPublicar.addEventListener("click", async () => {
+    const kw = Number(subirKw.value);
+    if (!leido) return;
+    if (!Number.isInteger(kw) || kw < 1 || kw > 53) {
+      mensajeSubida("Pon el número de semana (KW).", "error");
+      subirKw.focus();
+      return;
+    }
+    if (!subirPin.value) {
+      mensajeSubida("Escribe el PIN de subida.", "error");
+      subirPin.focus();
+      return;
+    }
+
+    const anio = anioDeKw(kw);
+    subirPublicar.disabled = true;
+    subirPublicar.textContent = "Publicando…";
+    try {
+      const res = await fetch(CUADRANTE_URL, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json", apikey:SUPABASE_KEY },
+        body:JSON.stringify({ pin:subirPin.value, anio, kw, datos:{ dias:leido.dias, filas:leido.filas } })
+      });
+      const { estado } = await res.json().catch(() => ({}));
+      if (estado === "pin") {
+        mensajeSubida("PIN incorrecto.", "error");
+        subirPin.select();
+        return;
+      }
+      if (estado !== "ok") throw new Error(estado || `HTTP ${res.status}`);
+
+      subirPin.value = "";
+      mensajeSubida(`✅ Cuadrante de la semana ${kw} publicado. Ya lo ven todos.`, "ok");
+      subirPreview.hidden = true;
+      subirArchivo.value = "";
+      subirArchivoTexto.textContent = "📄 Elegir Excel";
+      semanaVista = `${anio}-${kw}`;
+      diaVisto = null;
+      await cargarSemanas(true);
+    } catch (err) {
+      console.error(err);
+      mensajeSubida("No se pudo publicar. Comprueba la conexión e inténtalo otra vez.", "error");
+    } finally {
+      subirPublicar.disabled = false;
+      subirPublicar.textContent = "Publicar";
+    }
+  });
+
+  aplicarSemana();
+  cargarSemanas(true);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") cargarSemanas();
+  });
+  window.addEventListener("online", () => cargarSemanas(true));
 
   const offlineBanner = document.getElementById("offline-banner");
   const updateBanner = document.getElementById("update-banner");
