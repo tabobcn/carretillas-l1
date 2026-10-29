@@ -2746,15 +2746,42 @@
   updateButton.addEventListener("click", () => {
     updateButton.disabled = true;
     updateButton.textContent = "Actualizando…";
-    waitingWorker?.postMessage({ type:"SKIP_WAITING" });
+    if (waitingWorker) waitingWorker.postMessage({ type:"SKIP_WAITING" });
+    else window.location.reload();
   });
+
+  // Con algo a medio hacer no se recarga sola: se ofrece el botón Actualizar para no perderlo.
+  const hayTrabajoSinGuardar = () => (!appViews.subir.hidden && !subirPreview.hidden) || Boolean(qrEditando);
 
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       if (reloadingForUpdate) return;
+      if (hayTrabajoSinGuardar() && !updateButton.disabled) {
+        waitingWorker = null;
+        updateBanner.hidden = false;
+        return;
+      }
       reloadingForUpdate = true;
       window.location.reload();
     });
+
+    // Al abrir el acceso directo, Android suele retomar la app que tenía en memoria sin recargarla,
+    // así que se busca versión nueva cada vez que se vuelve a la app y cada media hora.
+    let ultimaComprobacion = 0;
+    const buscarVersionNueva = async () => {
+      if (Date.now() - ultimaComprobacion < 60000) return;
+      ultimaComprobacion = Date.now();
+      try {
+        await (await navigator.serviceWorker.getRegistration())?.update();
+      } catch (err) {
+        console.warn("No se pudo buscar una versión nueva.", err);
+      }
+    };
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") buscarVersionNueva();
+    });
+    window.addEventListener("pageshow", e => { if (e.persisted) buscarVersionNueva(); });
+    setInterval(buscarVersionNueva, 30 * 60000);
 
     window.addEventListener("load", async () => {
       try {
