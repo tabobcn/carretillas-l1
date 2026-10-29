@@ -1,4 +1,4 @@
-const CACHE_NAME = "carretillas-l1-v14";
+const CACHE_NAME = "carretillas-l1-v15";
 const APP_SHELL = [
   "./",
   "index.html",
@@ -36,6 +36,9 @@ self.addEventListener("message", (event) => {
   if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
 });
 
+// Con mala cobertura no se hace esperar: si la red tarda más de esto, se abre con la copia guardada.
+const ESPERA_RED = 2500;
+
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   if (request.method !== "GET") return;
@@ -43,23 +46,30 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(request.url);
   if (url.origin !== self.location.origin) return;
 
+  // Se pide siempre a la red y se guarda la copia, aunque ya se haya respondido con la guardada.
+  const deRed = fetch(request).then(async (response) => {
+    if (response.ok) {
+      const cache = await caches.open(CACHE_NAME);
+      await cache.put(request, response.clone());
+    }
+    return response;
+  });
+  event.waitUntil(deRed.catch(() => {}));
+
+  const guardada = async () => {
+    const copia = await caches.match(request, { ignoreSearch: request.mode === "navigate" });
+    if (copia || request.mode !== "navigate") return copia;
+    return caches.match("./index.html");
+  };
+
   event.respondWith((async () => {
     try {
-      const response = await fetch(request);
-      if (response.ok) {
-        const cache = await caches.open(CACHE_NAME);
-        await cache.put(request, response.clone());
-      }
-      return response;
+      const tarde = new Promise((resolve) => setTimeout(resolve, ESPERA_RED, "tarde"));
+      const primera = await Promise.race([deRed, tarde]);
+      if (primera !== "tarde") return primera;
+      return (await guardada()) || await deRed;
     } catch {
-      const cached = await caches.match(request);
-      if (cached) return cached;
-
-      if (request.mode === "navigate") {
-        return caches.match("./index.html");
-      }
-
-      return Response.error();
+      return (await guardada()) || Response.error();
     }
   })());
 });
