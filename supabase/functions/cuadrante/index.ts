@@ -3,6 +3,10 @@
 // POST -> { pin, anio, kw, datos } publica o reemplaza la semana indicada.
 // POST -> { pin, anio, kw, accion: "borrar" } borra la semana indicada.
 // POST -> { accion: "suscribir" | "desuscribir", suscripcion } avisos push al publicar.
+// POST -> { pin, accion: "comprobar" } solo comprueba la clave (para entrar en "Hacer cuadrante").
+// Al publicar se puede mandar también { equipo: [...] } con la lista de carretilleros.
+// POST -> { pin, accion: "codigo_guardar", codigo: { id?, faena, nombre, codigo } } guarda un código compartido.
+// POST -> { pin, accion: "codigo_borrar", id } borra un código compartido.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import * as webpush from "jsr:@negrel/webpush@0.5.0";
 
@@ -10,6 +14,9 @@ const BUCKET = "cuadrantes";
 const ARCHIVO = "cuadrantes.json";
 const MAX_SEMANAS = 12;
 const SUSCRIPCIONES = "suscripciones.json";
+const EQUIPO = "equipo.json";
+const CODIGOS = "codigos.json";
+const MAX_CODIGOS = 3000;
 const MAX_SUSCRIPCIONES = 1000;
 const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
 // Claves VAPID de los avisos (la pública también está en index.html).
@@ -44,6 +51,7 @@ async function sha256(texto: string) {
 
 type Semana = { anio: number; kw: number; publicado: string; datos: unknown };
 type Suscripcion = { endpoint: string; keys: { p256dh: string; auth: string } };
+type Codigo = { id: string; faena: string; nombre: string; codigo: string };
 
 async function leerLista<T>(archivo: string): Promise<T[]> {
   const { data, error } = await supabase.storage.from(BUCKET).download(archivo);
@@ -127,6 +135,15 @@ async function avisarATodos(aviso: { title: string; body: string; url: string })
 
 const texto = (v: unknown, max: number) => String(v ?? "").trim().slice(0, max);
 
+// El código se guarda tal cual (con sus espacios); solo se admite lo que cabe en un Code 128.
+function limpiarCodigo(c: any): Codigo | null {
+  const codigo = String(c?.codigo ?? "").slice(0, 80);
+  const faena = texto(c?.faena, 80);
+  if (!faena || !codigo.trim() || !/^[\x20-\x7e]+$/.test(codigo)) return null;
+  const id = /^[A-Za-z0-9_-]{6,40}$/.test(String(c?.id ?? "")) ? String(c.id) : crypto.randomUUID();
+  return { id, faena, nombre: texto(c?.nombre, 80), codigo };
+}
+
 // Reconstruye los datos con solo los campos esperados y longitudes acotadas.
 function limpiarDatos(datos: any) {
   if (!datos || !Array.isArray(datos.filas) || !Array.isArray(datos.dias)) return null;
@@ -147,7 +164,8 @@ Deno.serve(async (req) => {
 
   try {
     if (req.method === "GET") {
-      return responder({ semanas: await leerSemanas() });
+      const [semanas, equipo, codigos] = await Promise.all([leerSemanas(), leerLista<string>(EQUIPO), leerLista<Codigo>(CODIGOS)]);
+      return responder({ semanas, equipo, codigos });
     }
 
     if (req.method === "POST") {
@@ -167,6 +185,23 @@ Deno.serve(async (req) => {
         // Retraso para que probar PINs al azar sea lento.
         await new Promise((r) => setTimeout(r, 1500));
         return responder({ estado: "pin" }, 403);
+      }
+
+      if (body.accion === "comprobar") return responder({ estado: "ok" });
+
+      if (body.accion === "codigo_guardar" || body.accion === "codigo_borrar") {
+        const codigos = await leerLista<Codigo>(CODIGOS);
+        if (body.accion === "codigo_borrar") {
+          const id = String(body.id ?? "");
+          await guardarLista(CODIGOS, codigos.filter((c) => c.id !== id));
+          return responder({ estado: "ok" });
+        }
+        const codigo = limpiarCodigo(body.codigo);
+        if (!codigo) return responder({ estado: "datos" }, 400);
+        const lista = codigos.filter((c) => c.id !== codigo.id);
+        lista.push(codigo);
+        await guardarLista(CODIGOS, lista.slice(-MAX_CODIGOS));
+        return responder({ estado: "ok", codigo });
       }
 
       const anio = Number(body.anio);
@@ -190,6 +225,10 @@ Deno.serve(async (req) => {
       lista.push({ anio, kw, publicado: new Date().toISOString(), datos });
       lista.sort((a, b) => (b.anio * 100 + b.kw) - (a.anio * 100 + a.kw));
       await guardarSemanas(lista.slice(0, MAX_SEMANAS));
+      if (Array.isArray(body.equipo)) {
+        const equipo = [...new Set(body.equipo.slice(0, 100).map((n: unknown) => texto(n, 60)).filter(Boolean))];
+        await guardarLista(EQUIPO, equipo);
+      }
 
       const lunes = lunesDeSemana(anio, kw);
       const viernes = new Date(lunes.getTime() + 4 * 86400000);
