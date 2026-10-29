@@ -2,11 +2,19 @@
 // GET  -> { semanas: [...] } (más reciente primero)
 // POST -> { pin, anio, kw, datos } publica o reemplaza la semana indicada.
 // POST -> { pin, anio, kw, accion: "borrar" } borra la semana indicada.
+// POST -> { accion: "suscribir" | "desuscribir", suscripcion } avisos push al publicar.
 import { createClient } from "jsr:@supabase/supabase-js@2";
+import * as webpush from "jsr:@negrel/webpush@0.5.0";
 
 const BUCKET = "cuadrantes";
 const ARCHIVO = "cuadrantes.json";
 const MAX_SEMANAS = 12;
+const SUSCRIPCIONES = "suscripciones.json";
+const MAX_SUSCRIPCIONES = 1000;
+const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
+// Claves VAPID de los avisos (la pública también está en index.html).
+const VAPID = { publicKey: "<solo en la función desplegada>", privateKey: "<solo en la función desplegada>" };
+const CONTACTO = "https://carretillasl1.netlify.app";
 // PIN de subida: sha256(PIN_SAL + pin). Para cambiarlo basta con recalcular PIN_HASH.
 const PIN_SAL = "<solo en la función desplegada>";
 const PIN_HASH = "<solo en la función desplegada>";
@@ -35,9 +43,10 @@ async function sha256(texto: string) {
 }
 
 type Semana = { anio: number; kw: number; publicado: string; datos: unknown };
+type Suscripcion = { endpoint: string; keys: { p256dh: string; auth: string } };
 
-async function leerSemanas(): Promise<Semana[]> {
-  const { data, error } = await supabase.storage.from(BUCKET).download(ARCHIVO);
+async function leerLista<T>(archivo: string): Promise<T[]> {
+  const { data, error } = await supabase.storage.from(BUCKET).download(archivo);
   if (error || !data) return [];
   try {
     const lista = JSON.parse(await data.text());
@@ -47,15 +56,73 @@ async function leerSemanas(): Promise<Semana[]> {
   }
 }
 
-async function guardarSemanas(lista: Semana[]) {
+async function guardarLista(archivo: string, lista: unknown[]) {
   // Si el bucket ya existe devuelve un error que no importa.
   await supabase.storage.createBucket(BUCKET, { public: false });
   const { error } = await supabase.storage.from(BUCKET).upload(
-    ARCHIVO,
+    archivo,
     new Blob([JSON.stringify(lista)], { type: "application/json" }),
     { upsert: true, contentType: "application/json", cacheControl: "0" },
   );
   if (error) throw error;
+}
+
+const leerSemanas = () => leerLista<Semana>(ARCHIVO);
+const guardarSemanas = (lista: Semana[]) => guardarLista(ARCHIVO, lista);
+
+// Solo se aceptan suscripciones de los servicios de avisos de los navegadores.
+const SERVICIOS_PUSH = [/\.googleapis\.com$/, /\.mozilla\.com$/, /\.push\.apple\.com$/, /\.notify\.windows\.com$/];
+
+function limpiarSuscripcion(s: any): Suscripcion | null {
+  const endpoint = String(s?.endpoint ?? "");
+  const p256dh = String(s?.keys?.p256dh ?? "");
+  const auth = String(s?.keys?.auth ?? "");
+  let url: URL;
+  try {
+    url = new URL(endpoint);
+  } catch {
+    return null;
+  }
+  if (url.protocol !== "https:" || endpoint.length > 1000 || !SERVICIOS_PUSH.some((h) => h.test(url.hostname))) return null;
+  if (!/^[A-Za-z0-9_-]{80,100}$/.test(p256dh) || !/^[A-Za-z0-9_-]{16,32}$/.test(auth)) return null;
+  return { endpoint, keys: { p256dh, auth } };
+}
+
+function lunesDeSemana(anio: number, kw: number) {
+  const d = new Date(Date.UTC(anio, 0, 4));
+  d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() || 7) - 1) + (kw - 1) * 7);
+  return d;
+}
+const fechaCorta = (d: Date) => `${d.getUTCDate()} ${MESES[d.getUTCMonth()]}`;
+
+// Envía el aviso a todos los suscritos y quita las suscripciones que ya no existen.
+async function avisarATodos(aviso: { title: string; body: string; url: string }) {
+  const suscripciones = await leerLista<Suscripcion>(SUSCRIPCIONES);
+  if (!suscripciones.length) return 0;
+  const vapidKeys = await webpush.importVapidKeys(VAPID as unknown as webpush.ExportedVapidKeys);
+  const servidor = await webpush.ApplicationServer.new({ contactInformation: CONTACTO, vapidKeys });
+  const caducadas = new Set<string>();
+  let enviados = 0;
+  await Promise.all(suscripciones.map(async (s) => {
+    try {
+      await servidor.subscribe(s).pushTextMessage(JSON.stringify(aviso), {
+        urgency: webpush.Urgency.High,
+        ttl: 172800,
+        topic: "cuadrante",
+      });
+      enviados++;
+    } catch (err) {
+      const estado = (err as webpush.PushMessageError)?.response?.status;
+      if (estado === 404 || estado === 410) caducadas.add(s.endpoint);
+      console.error("aviso fallido", estado ?? String(err));
+    }
+  }));
+  if (caducadas.size) {
+    const actuales = await leerLista<Suscripcion>(SUSCRIPCIONES);
+    await guardarLista(SUSCRIPCIONES, actuales.filter((s) => !caducadas.has(s.endpoint)));
+  }
+  console.log(`avisos: ${enviados} enviados de ${suscripciones.length}`);
+  return enviados;
 }
 
 const texto = (v: unknown, max: number) => String(v ?? "").trim().slice(0, max);
@@ -87,6 +154,15 @@ Deno.serve(async (req) => {
       const body = await req.json().catch(() => null);
       if (!body) return responder({ estado: "datos" }, 400);
 
+      if (body.accion === "suscribir" || body.accion === "desuscribir") {
+        const suscripcion = limpiarSuscripcion(body.suscripcion);
+        if (!suscripcion) return responder({ estado: "datos" }, 400);
+        const lista = (await leerLista<Suscripcion>(SUSCRIPCIONES)).filter((s) => s.endpoint !== suscripcion.endpoint);
+        if (body.accion === "suscribir") lista.push(suscripcion);
+        await guardarLista(SUSCRIPCIONES, lista.slice(-MAX_SUSCRIPCIONES));
+        return responder({ estado: "ok" });
+      }
+
       if (typeof body.pin !== "string" || (await sha256(PIN_SAL + body.pin)) !== PIN_HASH) {
         // Retraso para que probar PINs al azar sea lento.
         await new Promise((r) => setTimeout(r, 1500));
@@ -110,10 +186,24 @@ Deno.serve(async (req) => {
 
       const datos = limpiarDatos(body.datos);
       if (!datos) return responder({ estado: "datos" }, 400);
+      const yaExistia = lista.length < semanas.length;
       lista.push({ anio, kw, publicado: new Date().toISOString(), datos });
       lista.sort((a, b) => (b.anio * 100 + b.kw) - (a.anio * 100 + a.kw));
       await guardarSemanas(lista.slice(0, MAX_SEMANAS));
-      return responder({ estado: "ok" });
+
+      const lunes = lunesDeSemana(anio, kw);
+      const viernes = new Date(lunes.getTime() + 4 * 86400000);
+      let avisados = 0;
+      try {
+        avisados = await avisarATodos({
+          title: yaExistia ? `Cuadrante KW ${kw} actualizado` : `Nuevo cuadrante: KW ${kw}`,
+          body: `Del ${fechaCorta(lunes)} al ${fechaCorta(viernes)}. Toca para ver qué te toca.`,
+          url: "./#cuadrante",
+        });
+      } catch (err) {
+        console.error("no se pudieron enviar los avisos", err);
+      }
+      return responder({ estado: "ok", avisados });
     }
 
     return responder({ estado: "metodo" }, 405);

@@ -672,6 +672,23 @@
   }
   .btn-imprimir:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; }
 
+  .avisos-box{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 10px 9px 12px;
+    margin:0 0 8px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:linear-gradient(155deg, var(--surface-2), var(--surface));
+  }
+  .page-empty + .avisos-box{ margin-top:12px; }
+  .avisos-box.on{ border-color:rgba(45,212,120,.4); }
+  .avisos-text{ flex:1 1 auto; min-width:0; font-size:.74rem; line-height:1.35; color:var(--text-dim); }
+  .avisos-text strong{ display:block; font-size:.86rem; color:var(--text); }
+  .avisos-box .btn-mini{ margin-left:0; }
+  .avisos-box .btn-mini:disabled{ opacity:.6; }
+
   /* Hoja para imprimir o guardar como PDF (solo se ve al imprimir). */
   #print-area{ font-family:Arial, Helvetica, sans-serif; color:#1c2129; background:#fff; }
   .pr-head{ display:flex; align-items:center; gap:18px; margin-bottom:10px; }
@@ -1365,7 +1382,8 @@
         <div class="page-empty">
           <strong>Todavía no hay cuadrante</strong>
           Cuando se publique el de esta semana aparecerá aquí.
-        </div>`;
+        </div>
+        ${htmlAvisos()}`;
       return;
     }
 
@@ -1429,6 +1447,7 @@
           ${nombres.map(n => `<option value="${escapeHtml(n)}" ${mismaPersona(n, yo) ? "selected" : ""}>${escapeHtml(n)}</option>`).join("")}
         </select>
       </label>
+      ${htmlAvisos()}
       ${miSemana}
       <div class="day-tabs" role="tablist" aria-label="Días">${pestanas}</div>
       ${filasDia}
@@ -1478,6 +1497,11 @@
   }
 
   cuadranteBox.addEventListener("click", e => {
+    const avisos = e.target.closest("[data-avisos]");
+    if (avisos){
+      cambiarAvisos(avisos.dataset.avisos === "activar");
+      return;
+    }
     const imprimir = e.target.closest("[data-imprimir]");
     if (imprimir){
       const semana = semanas.find(s => claveSemana(s) === semanaVista);
@@ -1805,7 +1829,7 @@
         headers:{ "Content-Type":"application/json", apikey:SUPABASE_KEY },
         body:JSON.stringify({ pin:subirPin.value, anio, kw, datos:{ dias:diasConFecha(leido.dias, kw), filas:leido.filas } })
       });
-      const { estado } = await res.json().catch(() => ({}));
+      const { estado, avisados } = await res.json().catch(() => ({}));
       if (estado === "pin") {
         mensajeSubida("PIN incorrecto.", "error");
         subirPin.select();
@@ -1814,7 +1838,8 @@
       if (estado !== "ok") throw new Error(estado || `HTTP ${res.status}`);
 
       subirPin.value = "";
-      mensajeSubida(`✅ Cuadrante de la semana ${kw} publicado. Ya lo ven todos.`, "ok");
+      const textoAvisos = avisados ? ` Avisados ${avisados} ${avisados === 1 ? "móvil" : "móviles"}.` : "";
+      mensajeSubida(`✅ Cuadrante de la semana ${kw} publicado. Ya lo ven todos.${textoAvisos}`, "ok");
       subirPreview.hidden = subirPublicar.hidden = true;
       subirArchivo.value = "";
       subirArchivoTexto.textContent = "📄 Subir Excel";
@@ -1892,6 +1917,104 @@
       boton.disabled = false;
       boton.textContent = "Borrar";
     }
+  });
+
+  // ---- Avisos (notificaciones push) cuando se publica un cuadrante ----
+  const VAPID_PUBLICA = "BPvv32LNEtPsLU4wsW-NPbm8gLgKX3yqnmsQqsLu-77rIyZOeN1oRV098hGREiWzAvuMJiQKYEvm6cLUO4SS9sk";
+  // "cargando" | "activados" | "desactivados" | "bloqueado" | "ios-instalar" | "no-soportado"
+  let estadoAvisos = "cargando";
+  let avisosOcupado = false;
+
+  const soportaAvisos = () => "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+
+  function htmlAvisos(){
+    const textos = {
+      activados:["🔔 Avisos activados", "Te llegará un aviso cuando se publique un cuadrante.", "desactivar", "Desactivar"],
+      desactivados:["🔔 Avisarme de los cuadrantes", "Recibe un aviso en el móvil cuando se publique uno nuevo.", "activar", "Activar"],
+      bloqueado:["🔕 Avisos bloqueados", "Los has bloqueado: actívalos en los ajustes del navegador para esta web."],
+      "ios-instalar":["🔔 Avisos en iPhone", "Para recibirlos, añade la app a la pantalla de inicio (Compartir → Añadir a pantalla de inicio) y ábrela desde ahí."]
+    };
+    const t = textos[estadoAvisos];
+    if (!t) return "";
+    return `<div class="avisos-box ${estadoAvisos === "activados" ? "on" : ""}">
+      <span class="avisos-text"><strong>${t[0]}</strong>${t[1]}</span>
+      ${t[2] ? `<button class="btn-mini" type="button" data-avisos="${t[2]}" ${avisosOcupado ? "disabled" : ""}>${avisosOcupado ? "…" : t[3]}</button>` : ""}
+    </div>`;
+  }
+
+  function refrescarAvisos(){
+    if (!appViews.cuadrante.hidden) renderCuadrante();
+  }
+
+  async function enviarSuscripcion(accion, suscripcion){
+    const res = await fetch(CUADRANTE_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json", apikey:SUPABASE_KEY },
+      body:JSON.stringify({ accion, suscripcion:suscripcion.toJSON() })
+    });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  }
+
+  const claveAplicacion = () => Uint8Array.from(atob(VAPID_PUBLICA.replace(/-/g, "+").replace(/_/g, "/")), c => c.charCodeAt(0));
+
+  async function comprobarAvisos(){
+    if (!soportaAvisos()){
+      estadoAvisos = /iPhone|iPad|iPod/.test(navigator.userAgent) ? "ios-instalar" : "no-soportado";
+    } else if (Notification.permission === "denied"){
+      estadoAvisos = "bloqueado";
+    } else {
+      const registro = await navigator.serviceWorker.ready;
+      const suscripcion = await registro.pushManager.getSubscription();
+      estadoAvisos = suscripcion ? "activados" : "desactivados";
+      // Una vez al día se vuelve a mandar, por si el servidor la perdió.
+      if (suscripcion && Date.now() - leerLocal("cl1-avisos-sync", 0) > 86400000){
+        enviarSuscripcion("suscribir", suscripcion)
+          .then(() => guardarLocal("cl1-avisos-sync", Date.now()))
+          .catch(err => console.warn("No se pudo renovar la suscripción.", err));
+      }
+    }
+    refrescarAvisos();
+  }
+
+  async function cambiarAvisos(activar){
+    avisosOcupado = true;
+    refrescarAvisos();
+    try {
+      const registro = await navigator.serviceWorker.ready;
+      if (activar){
+        const permiso = await Notification.requestPermission();
+        if (permiso !== "granted"){
+          estadoAvisos = permiso === "denied" ? "bloqueado" : "desactivados";
+          return;
+        }
+        const suscripcion = await registro.pushManager.getSubscription()
+          || await registro.pushManager.subscribe({ userVisibleOnly:true, applicationServerKey:claveAplicacion() });
+        await enviarSuscripcion("suscribir", suscripcion);
+        guardarLocal("cl1-avisos-sync", Date.now());
+        estadoAvisos = "activados";
+      } else {
+        const suscripcion = await registro.pushManager.getSubscription();
+        if (suscripcion){
+          await enviarSuscripcion("desuscribir", suscripcion).catch(() => {});
+          await suscripcion.unsubscribe();
+        }
+        estadoAvisos = "desactivados";
+      }
+    } catch (err) {
+      console.error(err);
+      alert("No se pudieron cambiar los avisos. Comprueba la conexión e inténtalo otra vez.");
+    } finally {
+      avisosOcupado = false;
+      refrescarAvisos();
+    }
+  }
+
+  comprobarAvisos().catch(err => console.warn("No se pudo comprobar los avisos.", err));
+
+  // Al tocar un aviso se abre el apartado Cuadrante.
+  if (location.hash === "#cuadrante") showAppView("cuadrante");
+  navigator.serviceWorker?.addEventListener("message", e => {
+    if (e.data?.type === "ABRIR" && String(e.data.url).includes("#cuadrante")) showAppView("cuadrante");
   });
 
   aplicarSemana();
