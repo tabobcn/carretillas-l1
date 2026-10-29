@@ -604,6 +604,110 @@
   .btn-borrar:disabled{ opacity:.6; cursor:default; }
   .btn-borrar:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; }
 
+  .subir-opciones{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  button.file-pick{ width:100%; font:inherit; font-weight:800; touch-action:manipulation; }
+  button.file-pick:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; }
+  .enlace-plantilla{ display:inline-block; margin:10px 2px 0; font-size:.82rem; font-weight:700; color:var(--accent-2); }
+  .btn-mini{
+    margin-left:auto;
+    min-height:34px;
+    padding:5px 10px;
+    border:1px solid var(--border);
+    border-radius:9px;
+    background:rgba(255,255,255,.05);
+    color:var(--text-dim);
+    font:inherit;
+    font-size:.76rem;
+    font-weight:800;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  .btn-mini:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; }
+  .preview-table.editor td{ padding:4px 5px; vertical-align:middle; }
+  /* La columna de la faena se queda fija al deslizar la tabla en el móvil. */
+  .preview-table.editor th:first-child, .preview-table.editor td:first-child{
+    position:sticky;
+    left:0;
+    z-index:1;
+    min-width:96px;
+    max-width:120px;
+    white-space:normal;
+    background:var(--surface-2);
+    box-shadow:1px 0 0 var(--border);
+  }
+  .preview-table.editor th:first-child{ z-index:2; }
+  .preview-table td small{ display:block; margin-top:2px; font-size:.62rem; font-weight:600; color:var(--text-dim); white-space:normal; }
+  .ed-persona, .ed-texto{
+    min-height:34px;
+    padding:4px 6px;
+    border:1px solid var(--border);
+    border-radius:8px;
+    background:#0f1216;
+    color:var(--text);
+    font:inherit;
+    font-size:.78rem;
+    font-weight:700;
+  }
+  .ed-persona{ min-width:108px; }
+  .ed-texto{ width:132px; }
+  .ed-persona.dup{ border-color:#ff8a80; box-shadow:0 0 0 1px #ff8a80 inset; }
+  .ed-persona:focus-visible, .ed-texto:focus-visible{ outline:2px solid var(--accent-2); outline-offset:1px; }
+
+  .imprimir-opciones{ display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:12px; }
+  .btn-imprimir small{ display:block; margin-top:2px; font-size:.66rem; font-weight:600; color:var(--text-dim); }
+  .btn-imprimir{
+    display:block;
+    width:100%;
+    min-height:42px;
+    padding:8px 6px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:rgba(255,255,255,.05);
+    color:var(--text);
+    font:inherit;
+    font-size:.88rem;
+    font-weight:800;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  .btn-imprimir:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; }
+
+  /* Hoja para imprimir o guardar como PDF (solo se ve al imprimir). */
+  #print-area{ font-family:Arial, Helvetica, sans-serif; color:#1c2129; background:#fff; }
+  .pr-head{ display:flex; align-items:center; gap:18px; margin-bottom:10px; }
+  .pr-logo{ height:46px; width:auto; filter:invert(1); }
+  .pr-title{ flex:1 1 auto; }
+  .pr-title h1{ margin:0; font-size:20pt; letter-spacing:.02em; }
+  .pr-title p{ margin:2px 0 0; font-size:10.5pt; color:#5a6270; }
+  .pr-kw{ padding:6px 14px; border:2.5px solid #ff8c1a; border-radius:10px; background:#fff4b8; font-size:20pt; font-weight:800; text-align:center; }
+  .pr-kw small{ display:block; font-size:8pt; font-weight:700; color:#5a6270; letter-spacing:.08em; }
+  .pr-table{ width:100%; border-collapse:collapse; font-size:11.5pt; }
+  .pr-table th, .pr-table td{ border:1px solid #b8bec7; padding:10px 6px; text-align:center; vertical-align:middle; }
+  .pr-table thead th{ background:#1c2129; color:#fff; font-size:10pt; }
+  .pr-table thead tr + tr th{ background:#ff8c1a; color:#1c2129; font-size:9pt; padding:3px; }
+  .pr-table tbody tr:nth-child(even) td{ background:#f4f5f7; }
+  .pr-table td.pr-faena{ font-weight:800; text-align:center; }
+  .pr-table td.pr-faena small{ display:block; font-weight:600; font-size:8pt; }
+  .pr-table td.pr-maq{ background:#ffe7cf !important; font-weight:800; }
+  .pr-table td.pr-id{ background:#ffe7cf !important; font-size:8.5pt; color:#3a414c; }
+  .pr-table td.pr-cambio{ font-weight:800; }
+  .pr-foot{ margin-top:8px; font-size:8pt; color:#5a6270; text-align:right; }
+  /* Blanco y negro: sin fondos de color, bordes más marcados para que se lea bien en la impresora. */
+  .pr-bn, .pr-bn .pr-title p, .pr-bn .pr-foot, .pr-bn .pr-kw small, .pr-bn .pr-table td.pr-id{ color:#000; }
+  .pr-bn .pr-kw{ background:#fff; border-color:#000; }
+  .pr-bn .pr-table th, .pr-bn .pr-table td{ border-color:#000; }
+  .pr-bn .pr-table thead th{ background:#fff; color:#000; border-bottom-width:2px; }
+  .pr-bn .pr-table thead tr + tr th{ background:#fff; color:#000; }
+  .pr-bn .pr-table tbody tr:nth-child(even) td,
+  .pr-bn .pr-table td.pr-maq,
+  .pr-bn .pr-table td.pr-id{ background:#fff !important; }
+  @media print{
+    @page{ size:A4 landscape; margin:10mm; }
+    html, body{ height:auto !important; overflow:visible !important; display:block !important; background:#fff !important; }
+    body > *:not(#print-area){ display:none !important; }
+    #print-area{ display:block !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  }
+
   .inapp-banner{
     max-width:560px;
     width:calc(100% - 20px);
@@ -807,19 +911,25 @@
 
 <section class="page-view" id="view-subir" hidden>
   <div class="page">
-    <h2 class="page-title">Subir cuadrante</h2>
-    <p class="page-hint">Elige el Excel del cuadrante. Antes de publicarlo verás cómo se ha leído; al publicarlo lo ven todos al momento.</p>
-    <label class="file-pick">
-      <input type="file" id="subir-archivo" accept=".xlsx,.xls,.xlsm,.ods,.csv">
-      <span id="subir-archivo-texto">📄 Elegir Excel</span>
-    </label>
+    <h2 class="page-title">Hacer cuadrante</h2>
+    <p class="page-hint">Sube el Excel o hazlo aquí mismo partiendo de la última semana. Antes de publicarlo puedes revisarlo y cambiar cualquier casilla; al publicarlo lo ven todos al momento.</p>
+    <div class="subir-opciones">
+      <label class="file-pick">
+        <input type="file" id="subir-archivo" accept=".xlsx,.xls,.xlsm,.ods,.csv">
+        <span id="subir-archivo-texto">📄 Subir Excel</span>
+      </label>
+      <button class="file-pick" id="subir-en-app" type="button">✏️ Hacerlo en la app</button>
+    </div>
+    <a class="enlace-plantilla" href="plantilla-cuadrante.xlsx" download>📥 Descargar plantilla Excel</a>
     <div class="msg" id="subir-msg" role="status" aria-live="polite"></div>
     <div id="subir-preview" hidden>
       <div class="field-row">
         <label>Semana (KW) <input id="subir-kw" type="number" min="1" max="53" inputmode="numeric"></label>
         <span class="field-note" id="subir-fechas"></span>
+        <button class="btn-mini" id="subir-vaciar" type="button">Quitar nombres</button>
       </div>
-      <div class="preview-scroll"><table class="preview-table" id="subir-tabla"></table></div>
+      <div class="msg error" id="subir-aviso" role="status" aria-live="polite"></div>
+      <div class="preview-scroll"><table class="preview-table editor" id="subir-tabla"></table></div>
     </div>
     <label class="field">PIN de subida
       <input id="subir-pin" type="password" inputmode="numeric" autocomplete="off" enterkeyhint="send">
@@ -883,7 +993,7 @@
   <div class="drawer-sep" role="presentation"></div>
   <button class="drawer-item" type="button" data-view="subir">
     <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 14.5v4a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-    Subir cuadrante
+    Hacer cuadrante
   </button>
 </nav>
 
@@ -895,6 +1005,8 @@
 <div class="app-banner" id="offline-banner" role="status" aria-live="polite" hidden>
   Sin conexión · usando la versión guardada
 </div>
+
+<div id="print-area" hidden></div>
 
 <script>
   // Lista fija que se usa mientras no haya ningún cuadrante publicado.
@@ -984,7 +1096,7 @@
     cuadrante: "Cuadrante semanal",
     qr: "Apartado QR",
     claves: "Apartado Claves",
-    subir: "Subir cuadrante"
+    subir: "Hacer cuadrante"
   };
   const brandSub = document.querySelector(".brand-sub");
   const brandLogo = document.getElementById("brand-logo");
@@ -1320,10 +1432,58 @@
       ${miSemana}
       <div class="day-tabs" role="tablist" aria-label="Días">${pestanas}</div>
       ${filasDia}
+      <div class="imprimir-opciones">
+        <button class="btn-imprimir" type="button" data-imprimir="color">🎨 PDF en color<small>para pantalla o proyector</small></button>
+        <button class="btn-imprimir" type="button" data-imprimir="bn">🖨️ PDF blanco y negro<small>para imprimir</small></button>
+      </div>
       ${publicado && !isNaN(publicado) ? `<div class="cuad-foot">Publicado el ${publicado.toLocaleDateString("es-ES")} a las ${publicado.toLocaleTimeString("es-ES", { hour:"2-digit", minute:"2-digit" })}</div>` : ""}`;
   }
 
+  // Monta la hoja A4 apaisada del cuadrante y abre el diálogo de imprimir (desde ahí se guarda como PDF).
+  function imprimirSemana(semana, modo){
+    const { dias, filas } = semana.datos;
+    const lunes = lunesDeSemana(semana.anio, semana.kw);
+    const fechas = diasConFecha(dias.map(d => String(d).replace(/\s+\d.*$/, "")), semana.kw);
+    const area = document.getElementById("print-area");
+    area.classList.toggle("pr-bn", modo === "bn");
+    area.innerHTML = `
+      <div class="pr-head">
+        <img class="pr-logo" src="${brandLogo.src}" alt="">
+        <div class="pr-title">
+          <h1>CUADRANTE CARRETILLAS L1</h1>
+          <p>Del ${escapeHtml(fechaCorta(lunes))} al ${escapeHtml(fechaCorta(sumarDias(lunes, dias.length - 1)))} de ${semana.anio}</p>
+        </div>
+        <div class="pr-kw"><small>SEMANA</small>KW ${semana.kw}</div>
+      </div>
+      <table class="pr-table">
+        <thead>
+          <tr><th>FAENA</th>${dias.map(d => `<th>${escapeHtml(String(d).replace(/\s+\d.*$/, ""))}</th>`).join("")}<th>TRACTORA</th><th>ID SEAT</th></tr>
+          <tr><th></th>${fechas.map(d => `<th>${escapeHtml(etiquetaCorta(d).numero)}</th>`).join("")}<th></th><th></th></tr>
+        </thead>
+        <tbody>
+          ${filas.map(f => `<tr>
+            <td class="pr-faena">${escapeHtml(f.codigo)}${f.nota ? `<small>${escapeHtml(f.nota)}</small>` : ""}</td>
+            ${dias.map((_, c) => {
+              const p = (f.personas[c] || "").trim();
+              const cambia = c > 0 && !mismaPersona(p, f.personas[c - 1]) && p;
+              return `<td class="${c === 0 || cambia ? "pr-cambio" : ""}">${escapeHtml(p || "—")}</td>`;
+            }).join("")}
+            <td class="pr-maq">${escapeHtml(f.tractora)}</td>
+            <td class="pr-id">${escapeHtml(f.id)}</td>
+          </tr>`).join("")}
+        </tbody>
+      </table>
+      <div class="pr-foot">Carretillas L1 · KW ${semana.kw} · impreso el ${new Date().toLocaleDateString("es-ES")}</div>`;
+    window.print();
+  }
+
   cuadranteBox.addEventListener("click", e => {
+    const imprimir = e.target.closest("[data-imprimir]");
+    if (imprimir){
+      const semana = semanas.find(s => claveSemana(s) === semanaVista);
+      if (semana) imprimirSemana(semana, imprimir.dataset.imprimir);
+      return;
+    }
     const chip = e.target.closest("[data-semana]");
     const dia = e.target.closest("[data-dia]");
     if (chip){
@@ -1472,26 +1632,152 @@
       return;
     }
 
+    subirKw.value = leido.kw || "";
+    mostrarEditor(`He leído ${leido.filas.length} faenas y ${leido.dias.length} días. Revisa que esté bien (puedes cambiar cualquier casilla), pon el PIN y publica.`);
+  });
+
+  // ---- Editor del cuadrante (sirve para el Excel leído y para hacerlo en la app) ----
+  const subirAviso = document.getElementById("subir-aviso");
+  const DIAS_LABORABLES = ["LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES"];
+
+  // Nombres vistos mientras se edita: así no desaparecen de la lista al cambiarlos por otro.
+  let nombresEditor = [];
+
+  function mostrarEditor(mensaje){
+    nombresEditor = leido.filas.flatMap(f => f.personas);
+    renderEditor();
+    actualizarFechasSubida();
+    mensajeSubida(mensaje);
+    subirPreview.hidden = subirPublicar.hidden = false;
+  }
+
+  function nombresConocidos(){
+    const todos = [
+      ...semanas.flatMap(s => s.datos.filas.flatMap(f => f.personas)),
+      ...nombresEditor,
+      ...(leido ? leido.filas.flatMap(f => f.personas) : []),
+      ...leerLocal("cl1-nombres-extra", [])
+    ].map(n => String(n).trim()).filter(Boolean);
+    return [...new Map(todos.map(n => [normalize(n), n])).values()].sort((a, b) => a.localeCompare(b, "es"));
+  }
+
+  // Si la etiqueta del día no trae el número ("LUNES"), se lo pone a partir de la KW.
+  function diasConFecha(dias, kw){
+    if (!Number.isInteger(kw) || kw < 1 || kw > 53) return dias;
+    const lunes = lunesDeSemana(anioDeKw(kw), kw);
+    return dias.map((d, i) => /\d/.test(d) ? d : `${d} ${sumarDias(lunes, Math.max(0, indiceDia(d))).getUTCDate()}`);
+  }
+
+  function renderEditor(){
+    if (!leido) return;
+    const nombres = nombresConocidos();
+    const dias = diasConFecha(leido.dias, Number(subirKw.value));
+    const repetidos = [];
+    const dup = new Set();
+    dias.forEach((d, c) => {
+      const vistos = new Map();
+      leido.filas.forEach((f, i) => {
+        const clave = normalize(f.personas[c]);
+        if (!clave) return;
+        if (vistos.has(clave)){
+          dup.add(`${i}-${c}`);
+          dup.add(`${vistos.get(clave)}-${c}`);
+          repetidos.push(`${capitalizar(d)}: ${f.personas[c]}`);
+        } else vistos.set(clave, i);
+      });
+    });
+    const opciones = actual => `
+      <option value="">—</option>
+      ${nombres.map(n => `<option value="${escapeHtml(n)}" ${mismaPersona(n, actual) ? "selected" : ""}>${escapeHtml(n)}</option>`).join("")}
+      <option value="__otro">+ Otro nombre…</option>`;
+
     subirTabla.innerHTML = `
       <thead><tr>
         <th>Faena</th>
-        ${leido.dias.map(d => { const { letra, numero } = etiquetaCorta(d); return `<th>${escapeHtml(letra)} ${escapeHtml(numero)}</th>`; }).join("")}
-        <th>Máquina</th>
+        ${dias.map(d => { const { letra, numero } = etiquetaCorta(d); return `<th>${escapeHtml(letra)} ${escapeHtml(numero)}</th>`; }).join("")}
+        <th>Tractora</th>
+        <th>ID SEAT</th>
       </tr></thead>
       <tbody>
-        ${leido.filas.map(f => `<tr>
-          <td>${escapeHtml(f.codigo)}</td>
-          ${f.personas.map(p => `<td>${escapeHtml(p || "—")}</td>`).join("")}
-          <td>${escapeHtml(f.tractora)}</td>
+        ${leido.filas.map((f, i) => `<tr>
+          <td>${escapeHtml(f.codigo)}${f.nota ? `<small>${escapeHtml(f.nota)}</small>` : ""}</td>
+          ${dias.map((d, c) => `<td><select class="ed-persona ${dup.has(`${i}-${c}`) ? "dup" : ""}" data-fila="${i}" data-dia="${c}" aria-label="${escapeHtml(f.codigo)}, ${escapeHtml(d)}">${opciones(f.personas[c])}</select></td>`).join("")}
+          <td><input class="ed-texto" data-fila="${i}" data-campo="tractora" value="${escapeHtml(f.tractora)}" aria-label="Tractora de ${escapeHtml(f.codigo)}"></td>
+          <td><input class="ed-texto" data-fila="${i}" data-campo="id" value="${escapeHtml(f.id)}" aria-label="ID SEAT de ${escapeHtml(f.codigo)}"></td>
         </tr>`).join("")}
       </tbody>`;
-    subirKw.value = leido.kw || "";
-    actualizarFechasSubida();
-    mensajeSubida(`He leído ${leido.filas.length} faenas y ${leido.dias.length} días. Revisa que esté bien, pon el PIN y publica.`);
-    subirPreview.hidden = subirPublicar.hidden = false;
+    subirAviso.textContent = repetidos.length ? `⚠️ Repetidos el mismo día: ${[...new Set(repetidos)].join(" · ")}` : "";
+  }
+
+  subirTabla.addEventListener("change", e => {
+    const campo = e.target.closest(".ed-texto");
+    if (campo){
+      leido.filas[Number(campo.dataset.fila)][campo.dataset.campo] = campo.value.trim();
+      return;
+    }
+    const sel = e.target.closest(".ed-persona");
+    if (!sel) return;
+    const fila = leido.filas[Number(sel.dataset.fila)];
+    const dia = Number(sel.dataset.dia);
+    let nuevo = sel.value;
+    if (nuevo === "__otro"){
+      nuevo = (prompt("Nombre del carretillero:") || "").trim().toUpperCase();
+      if (nuevo) {
+        guardarLocal("cl1-nombres-extra", [...leerLocal("cl1-nombres-extra", []), nuevo]);
+        nombresEditor.push(nuevo);
+      }
+    }
+    // Al elegir un nombre, los días siguientes que tenían lo mismo (o nada) pasan a tenerlo también.
+    const anterior = fila.personas[dia] || "";
+    fila.personas[dia] = nuevo;
+    for (let d = dia + 1; d < fila.personas.length; d++){
+      const p = fila.personas[d] || "";
+      if (p !== anterior && p !== "") break;
+      fila.personas[d] = nuevo;
+    }
+    renderEditor();
   });
 
-  subirKw.addEventListener("input", actualizarFechasSubida);
+  // Empieza un cuadrante nuevo copiando la última semana publicada.
+  function empezarEnApp(){
+    const base = semanas[0];
+    const hoy = semanaIso(new Date());
+    let kw = hoy.kw;
+    if (base){
+      const siguiente = sumarDias(lunesDeSemana(base.anio, base.kw), 7);
+      if (siguiente >= lunesDeSemana(hoy.anio, hoy.kw)) kw = semanaIso(new Date(siguiente.getUTCFullYear(), siguiente.getUTCMonth(), siguiente.getUTCDate())).kw;
+    }
+    const dias = base ? base.datos.dias.map(d => String(d).replace(/\s+\d.*$/, "")) : DIAS_LABORABLES;
+    leido = {
+      kw,
+      dias,
+      filas:(base ? base.datos.filas : FAENAS_BASE).map(f => ({
+        codigo:f.codigo,
+        nota:f.nota || "",
+        personas:dias.map((_, c) => base ? (f.personas[c] || "") : ""),
+        tractora:f.tractora,
+        id:f.id
+      }))
+    };
+    subirArchivo.value = "";
+    subirArchivoTexto.textContent = "📄 Subir Excel";
+    subirKw.value = kw;
+    mostrarEditor(base
+      ? `Copiada la semana ${base.kw}. Cambia lo que haga falta: al elegir a alguien en un día se copia a los días siguientes.`
+      : "Elige quién va en cada faena: al elegir a alguien el lunes se copia al resto de la semana.");
+  }
+
+  document.getElementById("subir-en-app").addEventListener("click", empezarEnApp);
+  document.getElementById("subir-vaciar").addEventListener("click", () => {
+    if (!leido || !confirm("¿Quitar todos los nombres?")) return;
+    leido.filas.forEach(f => { f.personas = f.personas.map(() => ""); });
+    renderEditor();
+  });
+
+  subirKw.addEventListener("input", () => {
+    actualizarFechasSubida();
+    renderEditor();
+  });
   subirPin.addEventListener("keydown", e => {
     if (e.key === "Enter") subirPublicar.click();
   });
@@ -1517,7 +1803,7 @@
       const res = await fetch(CUADRANTE_URL, {
         method:"POST",
         headers:{ "Content-Type":"application/json", apikey:SUPABASE_KEY },
-        body:JSON.stringify({ pin:subirPin.value, anio, kw, datos:{ dias:leido.dias, filas:leido.filas } })
+        body:JSON.stringify({ pin:subirPin.value, anio, kw, datos:{ dias:diasConFecha(leido.dias, kw), filas:leido.filas } })
       });
       const { estado } = await res.json().catch(() => ({}));
       if (estado === "pin") {
@@ -1531,7 +1817,7 @@
       mensajeSubida(`✅ Cuadrante de la semana ${kw} publicado. Ya lo ven todos.`, "ok");
       subirPreview.hidden = subirPublicar.hidden = true;
       subirArchivo.value = "";
-      subirArchivoTexto.textContent = "📄 Elegir Excel";
+      subirArchivoTexto.textContent = "📄 Subir Excel";
       semanaVista = `${anio}-${kw}`;
       diaVisto = null;
       await cargarSemanas(true);
