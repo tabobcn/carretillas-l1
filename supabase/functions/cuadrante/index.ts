@@ -18,6 +18,10 @@ const EQUIPO = "equipo.json";
 const CODIGOS = "codigos.json";
 const MAX_CODIGOS = 3000;
 const MAX_SUSCRIPCIONES = 1000;
+// Quien falla la clave 10 veces en 15 minutos se queda bloqueado ese rato (por conexión).
+const FALLOS = "fallos.json";
+const MAX_FALLOS = 10;
+const VENTANA_FALLOS = 15 * 60 * 1000;
 const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
 // Claves VAPID de los avisos (la pública también está en index.html).
 const VAPID = { publicKey: "<solo en la función desplegada>", privateKey: "<solo en la función desplegada>" };
@@ -64,7 +68,7 @@ async function leerLista<T>(archivo: string): Promise<T[]> {
   }
 }
 
-async function guardarLista(archivo: string, lista: unknown[]) {
+async function guardarLista(archivo: string, lista: unknown) {
   // Si el bucket ya existe devuelve un error que no importa.
   await supabase.storage.createBucket(BUCKET, { public: false });
   const { error } = await supabase.storage.from(BUCKET).upload(
@@ -73,6 +77,40 @@ async function guardarLista(archivo: string, lista: unknown[]) {
     { upsert: true, contentType: "application/json", cacheControl: "0" },
   );
   if (error) throw error;
+}
+
+// Intentos con clave en curso, en memoria: así también se frenan las peticiones lanzadas a la vez,
+// que leerían el archivo antes de que ninguna llegue a guardarlo.
+const intentos = new Map<string, number[]>();
+
+function ipDe(req: Request) {
+  const reenviada = req.headers.get("x-forwarded-for")?.split(",")[0].trim();
+  return reenviada || req.headers.get("cf-connecting-ip") || "desconocida";
+}
+
+const recientes = (lista: number[] | undefined, ahora: number) => (lista ?? []).filter((t) => ahora - t < VENTANA_FALLOS);
+
+async function leerFallos(): Promise<Record<string, number[]>> {
+  const { data, error } = await supabase.storage.from(BUCKET).download(FALLOS);
+  if (error || !data) return {};
+  try {
+    const fallos = JSON.parse(await data.text());
+    return fallos && typeof fallos === "object" && !Array.isArray(fallos) ? fallos : {};
+  } catch {
+    return {};
+  }
+}
+
+async function guardarFallo(ip: string, lista: number[]) {
+  const ahora = Date.now();
+  const fallos = await leerFallos();
+  const limpio: Record<string, number[]> = {};
+  for (const [clave, valor] of Object.entries(fallos)) {
+    const r = recientes(valor, ahora);
+    if (r.length) limpio[clave] = r;
+  }
+  limpio[ip] = [...new Set([...recientes(limpio[ip], ahora), ...lista])].slice(-MAX_FALLOS * 2);
+  await guardarLista(FALLOS, limpio);
 }
 
 const leerSemanas = () => leerLista<Semana>(ARCHIVO);
@@ -181,11 +219,23 @@ Deno.serve(async (req) => {
         return responder({ estado: "ok" });
       }
 
+      // Se apunta el intento antes de cualquier espera; si la clave es buena, se quita.
+      const ip = ipDe(req);
+      const ahora = Date.now();
+      const enMemoria = recientes(intentos.get(ip), ahora);
+      if (enMemoria.length >= MAX_FALLOS) return responder({ estado: "bloqueado" }, 429);
+      enMemoria.push(ahora);
+      intentos.set(ip, enMemoria);
+      const guardados = recientes((await leerFallos())[ip], ahora);
+      if (guardados.length >= MAX_FALLOS) return responder({ estado: "bloqueado" }, 429);
+
       if (typeof body.pin !== "string" || (await sha256(PIN_SAL + body.pin)) !== PIN_HASH) {
-        // Retraso para que probar PINs al azar sea lento.
+        await guardarFallo(ip, [...guardados, ...enMemoria]);
+        // Retraso para que probar claves al azar sea lento.
         await new Promise((r) => setTimeout(r, 1500));
         return responder({ estado: "pin" }, 403);
       }
+      intentos.set(ip, enMemoria.filter((t) => t !== ahora));
 
       if (body.accion === "comprobar") return responder({ estado: "ok" });
 
