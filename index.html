@@ -672,6 +672,73 @@
   }
   .btn-imprimir:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; }
 
+  .clave-fila{ display:flex; gap:8px; }
+  .clave-fila input{
+    flex:1 1 auto;
+    min-width:0;
+    min-height:50px;
+    padding:8px 14px;
+    border:1px solid rgba(255,140,26,.45);
+    border-radius:12px;
+    background:#0f1216;
+    color:var(--text);
+    font:inherit;
+    font-size:1.2rem;
+    font-weight:800;
+    letter-spacing:.2em;
+  }
+  .clave-fila .btn-primary{ width:auto; margin-top:0; padding:0 22px; }
+
+  .equipo-box{
+    margin:0 0 8px;
+    padding:8px 10px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:linear-gradient(155deg, var(--surface-2), var(--surface));
+  }
+  .equipo-box summary{ cursor:pointer; font-size:.84rem; font-weight:800; padding:4px 0; }
+  .equipo-chips{ display:flex; flex-wrap:wrap; gap:6px; margin:8px 0; }
+  .chip-equipo{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    padding:3px 4px 3px 10px;
+    border:1px solid var(--border);
+    border-radius:999px;
+    background:rgba(255,255,255,.05);
+    font-size:.78rem;
+    font-weight:800;
+  }
+  .chip-equipo button{
+    width:26px;
+    height:26px;
+    border:0;
+    border-radius:50%;
+    background:rgba(255,138,128,.14);
+    color:#ff8a80;
+    font:inherit;
+    font-size:.72rem;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  .equipo-add{ display:flex; gap:6px; }
+  .equipo-add input{
+    flex:1 1 auto;
+    min-width:0;
+    min-height:36px;
+    padding:6px 10px;
+    border:1px solid rgba(255,140,26,.38);
+    border-radius:9px;
+    background:#0f1216;
+    color:var(--text);
+    font:inherit;
+    font-size:.88rem;
+    font-weight:700;
+    text-transform:uppercase;
+  }
+  .equipo-add .btn-mini{ margin-left:0; }
+  .equipo-box .field-note{ display:block; margin:6px 0 2px; }
+
   .avisos-box{
     display:flex;
     align-items:center;
@@ -929,6 +996,15 @@
 <section class="page-view" id="view-subir" hidden>
   <div class="page">
     <h2 class="page-title">Hacer cuadrante</h2>
+    <div id="subir-bloqueo">
+      <p class="page-hint">🔒 Esta parte es solo para quien hace el cuadrante. Escribe la clave para entrar.</p>
+      <div class="clave-fila">
+        <input id="clave-entrar" type="password" inputmode="numeric" autocomplete="off" enterkeyhint="go" placeholder="Clave" aria-label="Clave">
+        <button class="btn-primary" id="clave-boton" type="button">Entrar</button>
+      </div>
+      <div class="msg" id="clave-msg" role="status" aria-live="polite"></div>
+    </div>
+    <div id="subir-contenido" hidden>
     <p class="page-hint">Sube el Excel o hazlo aquí mismo partiendo de la última semana. Antes de publicarlo puedes revisarlo y cambiar cualquier casilla; al publicarlo lo ven todos al momento.</p>
     <div class="subir-opciones">
       <label class="file-pick">
@@ -945,18 +1021,25 @@
         <span class="field-note" id="subir-fechas"></span>
         <button class="btn-mini" id="subir-vaciar" type="button">Quitar nombres</button>
       </div>
+      <details class="equipo-box">
+        <summary>👥 Equipo (<span id="equipo-total">0</span>) · añadir o quitar personas</summary>
+        <div class="equipo-chips" id="equipo-chips"></div>
+        <div class="equipo-add">
+          <input id="equipo-nuevo" type="text" placeholder="Nombre nuevo" autocomplete="off" enterkeyhint="done" aria-label="Nombre de la persona a añadir">
+          <button class="btn-mini" id="equipo-anadir" type="button">Añadir</button>
+        </div>
+        <p class="field-note">Los cambios del equipo se guardan al publicar.</p>
+      </details>
       <div class="msg error" id="subir-aviso" role="status" aria-live="polite"></div>
       <div class="preview-scroll"><table class="preview-table editor" id="subir-tabla"></table></div>
     </div>
-    <label class="field">PIN de subida
-      <input id="subir-pin" type="password" inputmode="numeric" autocomplete="off" enterkeyhint="send">
-    </label>
     <button class="btn-primary" id="subir-publicar" type="button" hidden>Publicar</button>
 
     <h3 class="page-subtitle">Semanas publicadas</h3>
-    <p class="page-hint">Si una semana se subió mal, bórrala con el PIN y vuelve a subirla. Para corregir datos basta con subir otra vez el Excel con la misma semana.</p>
+    <p class="page-hint">Si una semana se subió mal, bórrala y vuelve a subirla. Para corregir datos basta con publicar otra vez la misma semana.</p>
     <div id="subir-semanas"></div>
     <div class="msg" id="subir-semanas-msg" role="status" aria-live="polite"></div>
+    </div>
   </div>
 </section>
 
@@ -1139,7 +1222,10 @@
     renderHoy();
     if (name === "cuadrante" || name === "subir") {
       if (name === "cuadrante") renderCuadrante();
-      else renderPublicadas();
+      else {
+        renderPublicadas();
+        mostrarSubir();
+      }
       cargarSemanas();
     }
     setDrawer(false);
@@ -1243,6 +1329,7 @@
   const hoyBanner = document.getElementById("hoy-banner");
   const cuadranteBox = document.getElementById("cuadrante");
   let semanas = prepararSemanas(leerLocal("cl1-semanas", []));
+  let equipoGuardado = leerLocal("cl1-equipo", []);
   let yo = leerLocal("cl1-yo", "");
   let semanaVista = null;
   let diaVisto = null;
@@ -1534,6 +1621,10 @@
       const res = await fetch(CUADRANTE_URL, { headers:{ apikey:SUPABASE_KEY }, cache:"no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const respuesta = await res.json();
+      if (Array.isArray(respuesta.equipo) && respuesta.equipo.length){
+        equipoGuardado = ordenarNombres(respuesta.equipo);
+        guardarLocal("cl1-equipo", equipoGuardado);
+      }
       const nuevas = prepararSemanas(respuesta.semanas);
       if (JSON.stringify(nuevas) === JSON.stringify(semanas)) return;
       semanas = nuevas;
@@ -1552,7 +1643,6 @@
   const subirKw = document.getElementById("subir-kw");
   const subirFechas = document.getElementById("subir-fechas");
   const subirTabla = document.getElementById("subir-tabla");
-  const subirPin = document.getElementById("subir-pin");
   const subirPublicar = document.getElementById("subir-publicar");
   let leido = null;
 
@@ -1664,26 +1754,75 @@
   const subirAviso = document.getElementById("subir-aviso");
   const DIAS_LABORABLES = ["LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES"];
 
-  // Nombres vistos mientras se edita: así no desaparecen de la lista al cambiarlos por otro.
-  let nombresEditor = [];
+  // Equipo de carretilleros: sale en los desplegables y se guarda en Supabase al publicar.
+  // Mientras no haya uno guardado, se forma con los nombres de los cuadrantes anteriores.
+  const equipoTotal = document.getElementById("equipo-total");
+  const equipoChips = document.getElementById("equipo-chips");
+  const equipoNuevo = document.getElementById("equipo-nuevo");
+
+  function ordenarNombres(lista){
+    const limpios = lista.map(n => String(n || "").trim()).filter(Boolean);
+    return [...new Map(limpios.map(n => [normalize(n), n])).values()].sort((a, b) => a.localeCompare(b, "es"));
+  }
+
+  function equipoInicial(){
+    if (equipoGuardado.length) return [...equipoGuardado];
+    return ordenarNombres([
+      ...semanas.flatMap(s => s.datos.filas.flatMap(f => f.personas)),
+      ...(leido ? leido.filas.flatMap(f => f.personas) : []),
+      ...leerLocal("cl1-nombres-extra", [])
+    ]);
+  }
 
   function mostrarEditor(mensaje){
-    nombresEditor = leido.filas.flatMap(f => f.personas);
+    leido.equipo = equipoInicial();
+    renderEquipo();
     renderEditor();
     actualizarFechasSubida();
     mensajeSubida(mensaje);
     subirPreview.hidden = subirPublicar.hidden = false;
   }
 
-  function nombresConocidos(){
-    const todos = [
-      ...semanas.flatMap(s => s.datos.filas.flatMap(f => f.personas)),
-      ...nombresEditor,
-      ...(leido ? leido.filas.flatMap(f => f.personas) : []),
-      ...leerLocal("cl1-nombres-extra", [])
-    ].map(n => String(n).trim()).filter(Boolean);
-    return [...new Map(todos.map(n => [normalize(n), n])).values()].sort((a, b) => a.localeCompare(b, "es"));
+  function renderEquipo(){
+    equipoTotal.textContent = leido.equipo.length;
+    equipoChips.innerHTML = leido.equipo.map(n => `
+      <span class="chip-equipo">${escapeHtml(n)}<button type="button" data-quitar="${escapeHtml(n)}" aria-label="Quitar a ${escapeHtml(n)} del equipo">✕</button></span>`).join("")
+      || `<span class="field-note">No hay nadie en el equipo.</span>`;
   }
+
+  function anadirAlEquipo(nombre){
+    nombre = String(nombre || "").trim().toUpperCase();
+    if (!nombre) return "";
+    leido.equipo = ordenarNombres([...leido.equipo, nombre]);
+    renderEquipo();
+    return nombre;
+  }
+
+  document.getElementById("equipo-anadir").addEventListener("click", () => {
+    if (!anadirAlEquipo(equipoNuevo.value)) return equipoNuevo.focus();
+    equipoNuevo.value = "";
+    renderEditor();
+  });
+  equipoNuevo.addEventListener("keydown", e => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    document.getElementById("equipo-anadir").click();
+  });
+
+  // Al quitar a alguien del equipo también se vacían sus casillas de esta semana.
+  equipoChips.addEventListener("click", e => {
+    const boton = e.target.closest("[data-quitar]");
+    if (!boton) return;
+    const nombre = boton.dataset.quitar;
+    const casillas = leido.filas.reduce((n, f) => n + f.personas.filter(p => mismaPersona(p, nombre)).length, 0);
+    if (!confirm(casillas
+      ? `¿Quitar a ${nombre} del equipo? Se vaciarán sus ${casillas} casillas de esta semana.`
+      : `¿Quitar a ${nombre} del equipo?`)) return;
+    leido.equipo = leido.equipo.filter(n => !mismaPersona(n, nombre));
+    leido.filas.forEach(f => { f.personas = f.personas.map(p => mismaPersona(p, nombre) ? "" : p); });
+    renderEquipo();
+    renderEditor();
+  });
 
   // Si la etiqueta del día no trae el número ("LUNES"), se lo pone a partir de la KW.
   function diasConFecha(dias, kw){
@@ -1694,7 +1833,6 @@
 
   function renderEditor(){
     if (!leido) return;
-    const nombres = nombresConocidos();
     const dias = diasConFecha(leido.dias, Number(subirKw.value));
     const repetidos = [];
     const dup = new Set();
@@ -1710,10 +1848,17 @@
         } else vistos.set(clave, i);
       });
     });
-    const opciones = actual => `
-      <option value="">—</option>
-      ${nombres.map(n => `<option value="${escapeHtml(n)}" ${mismaPersona(n, actual) ? "selected" : ""}>${escapeHtml(n)}</option>`).join("")}
-      <option value="__otro">+ Otro nombre…</option>`;
+    // En cada casilla solo salen los que ese día aún no están en otra faena.
+    const opciones = (fila, dia) => {
+      const actual = leido.filas[fila].personas[dia] || "";
+      const ocupados = new Set(leido.filas.filter((_, j) => j !== fila).map(f => normalize(f.personas[dia])).filter(Boolean));
+      const libres = leido.equipo.filter(n => !ocupados.has(normalize(n)));
+      if (actual && !libres.some(n => mismaPersona(n, actual))) libres.unshift(actual);
+      return `
+        <option value="">—</option>
+        ${libres.map(n => `<option value="${escapeHtml(n)}" ${mismaPersona(n, actual) ? "selected" : ""}>${escapeHtml(n)}</option>`).join("")}
+        <option value="__otro">+ Otro nombre…</option>`;
+    };
 
     subirTabla.innerHTML = `
       <thead><tr>
@@ -1725,7 +1870,7 @@
       <tbody>
         ${leido.filas.map((f, i) => `<tr>
           <td>${escapeHtml(f.codigo)}${f.nota ? `<small>${escapeHtml(f.nota)}</small>` : ""}</td>
-          ${dias.map((d, c) => `<td><select class="ed-persona ${dup.has(`${i}-${c}`) ? "dup" : ""}" data-fila="${i}" data-dia="${c}" aria-label="${escapeHtml(f.codigo)}, ${escapeHtml(d)}">${opciones(f.personas[c])}</select></td>`).join("")}
+          ${dias.map((d, c) => `<td><select class="ed-persona ${dup.has(`${i}-${c}`) ? "dup" : ""}" data-fila="${i}" data-dia="${c}" aria-label="${escapeHtml(f.codigo)}, ${escapeHtml(d)}">${opciones(i, c)}</select></td>`).join("")}
           <td><input class="ed-texto" data-fila="${i}" data-campo="tractora" value="${escapeHtml(f.tractora)}" aria-label="Tractora de ${escapeHtml(f.codigo)}"></td>
           <td><input class="ed-texto" data-fila="${i}" data-campo="id" value="${escapeHtml(f.id)}" aria-label="ID SEAT de ${escapeHtml(f.codigo)}"></td>
         </tr>`).join("")}
@@ -1744,19 +1889,15 @@
     const fila = leido.filas[Number(sel.dataset.fila)];
     const dia = Number(sel.dataset.dia);
     let nuevo = sel.value;
-    if (nuevo === "__otro"){
-      nuevo = (prompt("Nombre del carretillero:") || "").trim().toUpperCase();
-      if (nuevo) {
-        guardarLocal("cl1-nombres-extra", [...leerLocal("cl1-nombres-extra", []), nuevo]);
-        nombresEditor.push(nuevo);
-      }
-    }
-    // Al elegir un nombre, los días siguientes que tenían lo mismo (o nada) pasan a tenerlo también.
+    if (nuevo === "__otro") nuevo = anadirAlEquipo(prompt("Nombre del carretillero:"));
+    // Al elegir un nombre, los días siguientes que tenían lo mismo (o nada) pasan a tenerlo también,
+    // salvo que ese día ya esté en otra faena.
     const anterior = fila.personas[dia] || "";
+    const ocupadoEn = d => nuevo && leido.filas.some(f => f !== fila && mismaPersona(f.personas[d], nuevo));
     fila.personas[dia] = nuevo;
     for (let d = dia + 1; d < fila.personas.length; d++){
       const p = fila.personas[d] || "";
-      if (p !== anterior && p !== "") break;
+      if ((p !== anterior && p !== "") || ocupadoEn(d)) break;
       fila.personas[d] = nuevo;
     }
     renderEditor();
@@ -1802,9 +1943,73 @@
     actualizarFechasSubida();
     renderEditor();
   });
-  subirPin.addEventListener("keydown", e => {
-    if (e.key === "Enter") subirPublicar.click();
+  // ---- Clave para entrar en "Hacer cuadrante" (se recuerda hasta cerrar la app) ----
+  const subirBloqueo = document.getElementById("subir-bloqueo");
+  const subirContenido = document.getElementById("subir-contenido");
+  const claveEntrar = document.getElementById("clave-entrar");
+  const claveBoton = document.getElementById("clave-boton");
+  const claveMsg = document.getElementById("clave-msg");
+  let claveSesion = (() => {
+    try { return sessionStorage.getItem("cl1-clave") || ""; } catch { return ""; }
+  })();
+
+  function mostrarSubir(){
+    subirBloqueo.hidden = Boolean(claveSesion);
+    subirContenido.hidden = !claveSesion;
+    if (!claveSesion && !appViews.subir.hidden) claveEntrar.focus();
+  }
+
+  function guardarClave(clave){
+    claveSesion = clave;
+    try {
+      if (clave) sessionStorage.setItem("cl1-clave", clave);
+      else sessionStorage.removeItem("cl1-clave");
+    } catch {}
+    mostrarSubir();
+  }
+
+  // Si la clave ya no vale (porque se ha cambiado), se vuelve a pedir.
+  function claveCaducada(){
+    guardarClave("");
+    claveMsg.textContent = "La clave ha cambiado. Vuelve a escribirla.";
+    claveMsg.className = "msg error";
+  }
+
+  claveBoton.addEventListener("click", async () => {
+    const clave = claveEntrar.value.trim();
+    if (!clave) return claveEntrar.focus();
+    claveBoton.disabled = true;
+    claveBoton.textContent = "Comprobando…";
+    claveMsg.textContent = "";
+    claveMsg.className = "msg";
+    try {
+      const res = await fetch(CUADRANTE_URL, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json", apikey:SUPABASE_KEY },
+        body:JSON.stringify({ pin:clave, accion:"comprobar" })
+      });
+      const { estado } = await res.json().catch(() => ({}));
+      if (estado === "ok"){
+        claveEntrar.value = "";
+        guardarClave(clave);
+      } else if (estado === "pin"){
+        claveMsg.textContent = "Clave incorrecta.";
+        claveMsg.className = "msg error";
+        claveEntrar.select();
+      } else throw new Error(estado || `HTTP ${res.status}`);
+    } catch (err) {
+      console.error(err);
+      claveMsg.textContent = "No se pudo comprobar la clave. Comprueba la conexión.";
+      claveMsg.className = "msg error";
+    } finally {
+      claveBoton.disabled = false;
+      claveBoton.textContent = "Entrar";
+    }
   });
+  claveEntrar.addEventListener("keydown", e => {
+    if (e.key === "Enter") claveBoton.click();
+  });
+  mostrarSubir();
 
   subirPublicar.addEventListener("click", async () => {
     const kw = Number(subirKw.value);
@@ -1814,12 +2019,6 @@
       subirKw.focus();
       return;
     }
-    if (!subirPin.value) {
-      mensajeSubida("Escribe el PIN de subida.", "error");
-      subirPin.focus();
-      return;
-    }
-
     const anio = anioDeKw(kw);
     subirPublicar.disabled = true;
     subirPublicar.textContent = "Publicando…";
@@ -1827,17 +2026,14 @@
       const res = await fetch(CUADRANTE_URL, {
         method:"POST",
         headers:{ "Content-Type":"application/json", apikey:SUPABASE_KEY },
-        body:JSON.stringify({ pin:subirPin.value, anio, kw, datos:{ dias:diasConFecha(leido.dias, kw), filas:leido.filas } })
+        body:JSON.stringify({ pin:claveSesion, anio, kw, datos:{ dias:diasConFecha(leido.dias, kw), filas:leido.filas }, equipo:leido.equipo })
       });
       const { estado, avisados } = await res.json().catch(() => ({}));
-      if (estado === "pin") {
-        mensajeSubida("PIN incorrecto.", "error");
-        subirPin.select();
-        return;
-      }
+      if (estado === "pin") return claveCaducada();
       if (estado !== "ok") throw new Error(estado || `HTTP ${res.status}`);
 
-      subirPin.value = "";
+      equipoGuardado = [...leido.equipo];
+      guardarLocal("cl1-equipo", equipoGuardado);
       const textoAvisos = avisados ? ` Avisados ${avisados} ${avisados === 1 ? "móvil" : "móviles"}.` : "";
       mensajeSubida(`✅ Cuadrante de la semana ${kw} publicado. Ya lo ven todos.${textoAvisos}`, "ok");
       subirPreview.hidden = subirPublicar.hidden = true;
@@ -1882,12 +2078,6 @@
     const [anio, kw] = boton.dataset.borrar.split("-").map(Number);
     subirSemanasMsg.textContent = "";
     subirSemanasMsg.className = "msg";
-    if (!subirPin.value){
-      subirSemanasMsg.textContent = "Escribe el PIN de subida (arriba) para poder borrar.";
-      subirSemanasMsg.className = "msg error";
-      subirPin.focus();
-      return;
-    }
     if (!confirm(`¿Borrar el cuadrante de la semana ${kw}? Dejará de verse para todos.`)) return;
 
     boton.disabled = true;
@@ -1896,15 +2086,10 @@
       const res = await fetch(CUADRANTE_URL, {
         method:"POST",
         headers:{ "Content-Type":"application/json", apikey:SUPABASE_KEY },
-        body:JSON.stringify({ pin:subirPin.value, anio, kw, accion:"borrar" })
+        body:JSON.stringify({ pin:claveSesion, anio, kw, accion:"borrar" })
       });
       const { estado } = await res.json().catch(() => ({}));
-      if (estado === "pin"){
-        subirSemanasMsg.textContent = "PIN incorrecto.";
-        subirSemanasMsg.className = "msg error";
-        subirPin.select();
-        return;
-      }
+      if (estado === "pin") return claveCaducada();
       if (estado !== "ok" && estado !== "no_existe") throw new Error(estado || `HTTP ${res.status}`);
       subirSemanasMsg.textContent = `🗑️ Semana ${kw} borrada.`;
       subirSemanasMsg.className = "msg ok";

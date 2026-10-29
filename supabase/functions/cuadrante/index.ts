@@ -3,6 +3,8 @@
 // POST -> { pin, anio, kw, datos } publica o reemplaza la semana indicada.
 // POST -> { pin, anio, kw, accion: "borrar" } borra la semana indicada.
 // POST -> { accion: "suscribir" | "desuscribir", suscripcion } avisos push al publicar.
+// POST -> { pin, accion: "comprobar" } solo comprueba la clave (para entrar en "Hacer cuadrante").
+// Al publicar se puede mandar también { equipo: [...] } con la lista de carretilleros.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import * as webpush from "jsr:@negrel/webpush@0.5.0";
 
@@ -10,6 +12,7 @@ const BUCKET = "cuadrantes";
 const ARCHIVO = "cuadrantes.json";
 const MAX_SEMANAS = 12;
 const SUSCRIPCIONES = "suscripciones.json";
+const EQUIPO = "equipo.json";
 const MAX_SUSCRIPCIONES = 1000;
 const MESES = ["ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"];
 // Claves VAPID de los avisos (la pública también está en index.html).
@@ -147,7 +150,8 @@ Deno.serve(async (req) => {
 
   try {
     if (req.method === "GET") {
-      return responder({ semanas: await leerSemanas() });
+      const [semanas, equipo] = await Promise.all([leerSemanas(), leerLista<string>(EQUIPO)]);
+      return responder({ semanas, equipo });
     }
 
     if (req.method === "POST") {
@@ -168,6 +172,8 @@ Deno.serve(async (req) => {
         await new Promise((r) => setTimeout(r, 1500));
         return responder({ estado: "pin" }, 403);
       }
+
+      if (body.accion === "comprobar") return responder({ estado: "ok" });
 
       const anio = Number(body.anio);
       const kw = Number(body.kw);
@@ -190,6 +196,10 @@ Deno.serve(async (req) => {
       lista.push({ anio, kw, publicado: new Date().toISOString(), datos });
       lista.sort((a, b) => (b.anio * 100 + b.kw) - (a.anio * 100 + a.kw));
       await guardarSemanas(lista.slice(0, MAX_SEMANAS));
+      if (Array.isArray(body.equipo)) {
+        const equipo = [...new Set(body.equipo.slice(0, 100).map((n: unknown) => texto(n, 60)).filter(Boolean))];
+        await guardarLista(EQUIPO, equipo);
+      }
 
       const lunes = lunesDeSemana(anio, kw);
       const viernes = new Date(lunes.getTime() + 4 * 86400000);
