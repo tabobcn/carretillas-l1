@@ -873,7 +873,7 @@
   .avisos-box .btn-mini:disabled{ opacity:.6; }
 
   /* Hoja para imprimir o guardar como PDF (solo se ve al imprimir). */
-  #print-area{ font-family:Arial, Helvetica, sans-serif; color:#1c2129; background:#fff; }
+  #print-area{ box-sizing:border-box; padding:9mm 10mm; font-family:Arial, Helvetica, sans-serif; color:#1c2129; background:#fff; }
   .pr-head{ display:flex; align-items:center; gap:18px; margin-bottom:10px; }
   .pr-logo{ height:46px; width:auto; filter:invert(1); }
   .pr-title{ flex:1 1 auto; }
@@ -881,7 +881,7 @@
   .pr-title p{ margin:2px 0 0; font-size:10.5pt; color:#5a6270; }
   .pr-kw{ padding:6px 14px; border:2.5px solid #ff8c1a; border-radius:10px; background:#fff4b8; font-size:20pt; font-weight:800; text-align:center; }
   .pr-kw small{ display:block; font-size:8pt; font-weight:700; color:#5a6270; letter-spacing:.08em; }
-  .pr-table{ width:100%; border-collapse:collapse; font-size:11.5pt; }
+  .pr-table{ width:100%; border-collapse:collapse; font-size:11.5pt; break-inside:avoid; }
   .pr-table th, .pr-table td{ border:1px solid #b8bec7; padding:10px 6px; text-align:center; vertical-align:middle; }
   .pr-table thead th{ background:#1c2129; color:#fff; font-size:10pt; }
   .pr-table thead tr + tr th{ background:#ff8c1a; color:#1c2129; font-size:9pt; padding:3px; }
@@ -902,8 +902,8 @@
   .pr-bn .pr-table td.pr-maq,
   .pr-bn .pr-table td.pr-id{ background:#fff !important; }
   @media print{
-    @page{ size:A4 landscape; margin:10mm; }
-    html, body{ height:auto !important; overflow:visible !important; display:block !important; background:#fff !important; }
+    @page{ size:A4 landscape; margin:0; }
+    html, body{ margin:0 !important; height:auto !important; overflow:visible !important; display:block !important; background:#fff !important; }
     body > *:not(#print-area){ display:none !important; }
     #print-area{ display:block !important; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
   }
@@ -1167,7 +1167,7 @@
   <div class="empty-box">
     <div class="empty-emoji" aria-hidden="true">🚧</div>
     <div class="empty-title">Próximamente</div>
-    <p>El apartado Claves está en obras.</p>
+    <p>El apartado QR está en obras.</p>
   </div>
 </section>
 
@@ -1196,11 +1196,11 @@
   </button>
   <button class="drawer-item" type="button" data-view="qr">
     <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 14h3v3h-3zM17 17h3v3h-3z" fill="currentColor"/></svg>
-    QR
+    Claves
   </button>
   <button class="drawer-item" type="button" data-view="claves">
     <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19"><circle cx="8" cy="12" r="3.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M11.6 12H20.2M17.4 12v3.2M20.2 12v2.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-    Claves
+    QR
   </button>
   <div class="drawer-sep" role="presentation"></div>
   <button class="drawer-item" type="button" data-view="subir">
@@ -1308,7 +1308,7 @@
     inicio: "Toca tu faena para ver la máquina",
     cuadrante: "Cuadrante semanal",
     qr: "Códigos de barras",
-    claves: "Apartado Claves",
+    claves: "Apartado QR",
     subir: "Hacer cuadrante"
   };
   const brandSub = document.querySelector(".brand-sub");
@@ -1666,6 +1666,18 @@
       ${publicado && !isNaN(publicado) ? `<div class="cuad-foot">Publicado el ${publicado.toLocaleDateString("es-ES")} a las ${publicado.toLocaleTimeString("es-ES", { hour:"2-digit", minute:"2-digit" })}</div>` : ""}`;
   }
 
+  // Mide la hoja y la encoge lo justo para que quepa en un A4 apaisado en cualquier navegador.
+  function ajustarAHoja(area){
+    const mm = 96 / 25.4;
+    area.style.cssText = "position:fixed; left:-10000px; top:0; display:block; width:297mm; zoom:1";
+    area.hidden = false;
+    const alto = area.scrollHeight;
+    area.hidden = true;
+    area.style.cssText = "";
+    // Se dejan unos milímetros de sobra por si la impresora redondea.
+    area.style.zoom = String(Math.min(1, (204 * mm) / alto));
+  }
+
   // Monta la hoja A4 apaisada del cuadrante y abre el diálogo de imprimir (desde ahí se guarda como PDF).
   function imprimirSemana(semana, modo){
     const { dias, filas } = semana.datos;
@@ -1701,6 +1713,7 @@
         </tbody>
       </table>
       <div class="pr-foot">Carretillas L1 · KW ${semana.kw} · impreso el ${new Date().toLocaleDateString("es-ES")}</div>`;
+    ajustarAHoja(area);
     window.print();
   }
 

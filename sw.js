@@ -1,4 +1,4 @@
-const CACHE_NAME = "carretillas-l1-v13";
+const CACHE_NAME = "carretillas-l1-v14";
 const APP_SHELL = [
   "./",
   "index.html",
