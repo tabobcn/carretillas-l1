@@ -739,6 +739,122 @@
   .equipo-add .btn-mini{ margin-left:0; }
   .equipo-box .field-note{ display:block; margin:6px 0 2px; }
 
+  .qr-grid{ display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:6px; }
+  .qr-faena{
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    gap:3px;
+    min-height:66px;
+    padding:8px 10px;
+    border:1px solid var(--border);
+    border-radius:14px;
+    background:linear-gradient(155deg, var(--surface-2), var(--surface));
+    color:var(--text);
+    font:inherit;
+    text-align:left;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  .qr-faena.con{ border-color:rgba(255,140,26,.4); }
+  .qr-faena:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; }
+  .qr-faena-code{ font-size:1.05rem; font-weight:800; line-height:1.15; word-break:break-word; }
+  .qr-faena-n{ font-size:.7rem; font-weight:700; color:var(--text-dim); }
+  .qr-faena.con .qr-faena-n{ color:var(--accent-2); }
+  .qr-head{ display:flex; align-items:center; gap:10px; margin:2px 0 10px; }
+  .qr-head .btn-mini{ margin-left:0; }
+  .qr-title{ margin:0; font-size:1.2rem; font-weight:800; word-break:break-word; }
+  .qr-tools{ display:flex; gap:8px; margin-bottom:10px; }
+  .qr-buscar{
+    flex:1 1 auto;
+    min-width:0;
+    min-height:44px;
+    padding:8px 12px;
+    border:1px solid rgba(255,140,26,.38);
+    border-radius:12px;
+    background:#0f1216;
+    color:var(--text);
+    font:inherit;
+    font-size:.95rem;
+    font-weight:700;
+  }
+  .qr-buscar:focus{ outline:none; border-color:var(--accent); }
+  .btn-primary.qr-anadir{ width:auto; min-height:44px; margin-top:0; padding:0 16px; }
+  .qr-form{
+    margin-bottom:12px;
+    padding:4px 12px 12px;
+    border:1px solid rgba(255,140,26,.38);
+    border-radius:14px;
+    background:linear-gradient(155deg, var(--surface-2), var(--surface));
+  }
+  .qr-form .field{ margin:10px 0 0; }
+  .qr-form .field input{ white-space:pre; }
+  .qr-preview{ margin-top:10px; }
+  .qr-check{ display:flex; align-items:center; gap:8px; margin-top:10px; font-size:.84rem; font-weight:700; }
+  .qr-check input{ width:20px; height:20px; accent-color:var(--accent); }
+  .qr-check small{ color:var(--text-dim); font-weight:600; }
+  .qr-form-botones{ display:flex; justify-content:flex-end; gap:8px; margin-top:10px; }
+  .qr-form-botones .btn-mini{ margin-left:0; min-height:44px; padding:0 14px; }
+  .qr-form-botones .btn-primary{ width:auto; margin-top:0; min-height:44px; padding:0 22px; }
+  .qr-item{ margin-bottom:10px; }
+  .qr-item-head{ display:flex; align-items:center; gap:6px; margin:0 2px 4px; }
+  .qr-item-nombre{ flex:1 1 auto; min-width:0; font-size:1rem; font-weight:800; word-break:break-word; }
+  .qr-badge{ flex:0 0 auto; padding:2px 7px; border-radius:999px; background:rgba(45,212,120,.14); color:var(--mine); font-size:.66rem; font-weight:800; }
+  .qr-accion{
+    flex:0 0 auto;
+    width:34px;
+    height:34px;
+    border:1px solid var(--border);
+    border-radius:9px;
+    background:rgba(255,255,255,.04);
+    font-size:.9rem;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  .qr-accion:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; }
+  /* El código siempre sobre blanco: así lo leen bien las pistolas también desde la pantalla. */
+  .qr-barras{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    width:100%;
+    padding:10px 8px 6px;
+    border:0;
+    border-radius:12px;
+    background:#fff;
+    color:#000;
+    font:inherit;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  .qr-barras:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; }
+  .barras{ display:block; width:100%; height:58px; }
+  .qr-codigo-texto{
+    margin-top:4px;
+    font-family:ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size:.9rem;
+    font-weight:700;
+    color:#000;
+    white-space:pre;
+    letter-spacing:.06em;
+    overflow-wrap:anywhere;
+  }
+  .codigo-grande{
+    position:fixed;
+    inset:0;
+    z-index:200;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:16px;
+    background:#fff;
+  }
+  .codigo-grande-caja{ width:100%; max-width:720px; text-align:center; color:#000; }
+  .codigo-grande-nombre{ margin-bottom:16px; font-size:1.4rem; font-weight:800; }
+  .codigo-grande .barras{ height:120px; margin:0 auto; }
+  .codigo-grande .qr-codigo-texto{ display:block; margin-top:10px; font-size:1.3rem; }
+  .codigo-grande-cerrar{ margin-top:22px; font-size:.8rem; color:#666; }
+
   .avisos-box{
     display:flex;
     align-items:center;
@@ -1043,12 +1159,8 @@
   </div>
 </section>
 
-<section class="empty-view" id="view-qr" hidden>
-  <div class="empty-box">
-    <div class="empty-emoji" aria-hidden="true">🚧</div>
-    <div class="empty-title">Próximamente</div>
-    <p>El apartado QR está en obras.</p>
-  </div>
+<section class="page-view" id="view-qr" hidden>
+  <div class="page" id="qr"></div>
 </section>
 
 <section class="empty-view" id="view-claves" hidden>
@@ -1107,6 +1219,7 @@
 </div>
 
 <div id="print-area" hidden></div>
+<div class="codigo-grande" id="codigo-grande" role="dialog" aria-modal="true" aria-label="Código en grande" hidden></div>
 
 <script>
   // Lista fija que se usa mientras no haya ningún cuadrante publicado.
@@ -1194,7 +1307,7 @@
   const viewSubtitles = {
     inicio: "Toca tu faena para ver la máquina",
     cuadrante: "Cuadrante semanal",
-    qr: "Apartado QR",
+    qr: "Códigos de barras",
     claves: "Apartado Claves",
     subir: "Hacer cuadrante"
   };
@@ -1220,6 +1333,12 @@
     brandLogo.closest(".topbar").classList.toggle("compact", name !== "inicio");
     searchButton.hidden = name !== "inicio";
     renderHoy();
+    if (name === "qr") {
+      qrFaena = null;
+      qrEditando = null;
+      renderQr();
+      cargarSemanas();
+    }
     if (name === "cuadrante" || name === "subir") {
       if (name === "cuadrante") renderCuadrante();
       else {
@@ -1236,6 +1355,7 @@
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && drawer.classList.contains("open")) setDrawer(false);
     if (e.key === "Escape" && !searchPanel.hidden) setSearch(false);
+    if (e.key === "Escape" && !codigoGrande.hidden) codigoGrande.hidden = true;
   });
   for (const item of drawerItems) item.addEventListener("click", () => showAppView(item.dataset.view));
 
@@ -1408,6 +1528,7 @@
     renderHoy();
     if (!appViews.cuadrante.hidden) renderCuadrante();
     if (!appViews.subir.hidden) renderPublicadas();
+    if (!appViews.qr.hidden && qrFaena === null) renderQrFaenas();
   }
 
   // Al abrir la app, tu tarjeta de hoy se da la vuelta sola hasta que la cierres tú.
@@ -1624,6 +1745,14 @@
       if (Array.isArray(respuesta.equipo) && respuesta.equipo.length){
         equipoGuardado = ordenarNombres(respuesta.equipo);
         guardarLocal("cl1-equipo", equipoGuardado);
+      }
+      if (Array.isArray(respuesta.codigos)){
+        const nuevos = limpiarCodigos(respuesta.codigos);
+        if (JSON.stringify(nuevos) !== JSON.stringify(codigosEquipo)){
+          codigosEquipo = nuevos;
+          guardarLocal("cl1-codigos-equipo", codigosEquipo);
+          refrescarQr();
+        }
       }
       const nuevas = prepararSemanas(respuesta.semanas);
       if (JSON.stringify(nuevas) === JSON.stringify(semanas)) return;
@@ -2101,6 +2230,372 @@
     } finally {
       boton.disabled = false;
       boton.textContent = "Borrar";
+    }
+  });
+
+  // ---- Código de barras Code 128 (sets B y C), dibujado en SVG sin librerías ----
+  // Anchos de barra/espacio de cada símbolo 0..105; el 106 es el de parada.
+  const CODE128 = ("212222 222122 222221 121223 121322 131222 122213 122312 132212 221213 221312 231212 112232 122132 122231 113222 " +
+    "123122 123221 223211 221132 221231 213212 223112 312131 311222 321122 321221 312212 322112 322211 212123 212321 232121 111323 " +
+    "131123 131321 112313 132113 132311 211313 231113 231311 112133 112331 132131 113123 113321 133121 313121 211331 231131 213113 " +
+    "213311 213131 311123 311321 331121 312113 312311 332111 314111 221411 431111 111224 111422 121124 121421 141122 141221 112214 " +
+    "112412 122114 122411 142112 142211 241211 221114 413111 241112 134111 111242 121142 121241 114212 124112 124211 411212 421112 " +
+    "421211 212141 214121 412121 111143 111341 131141 114113 114311 411113 411311 113141 114131 311141 411131 211412 211214 211232 2331112").split(" ");
+
+  const cabeEnCode128 = texto => /^[\x20-\x7e]+$/.test(texto);
+
+  // Devuelve los valores de los símbolos (con inicio, control y parada) o null si el texto no se puede codificar.
+  // Usa el set C para tramos largos de números (ocupa la mitad) y el B para todo lo demás; los espacios se respetan tal cual.
+  function valoresCode128(texto){
+    const s = String(texto ?? "");
+    if (!s || !cabeEnCode128(s)) return null;
+    const digitosDesde = j => { let n = 0; while (j + n < s.length && s[j + n] >= "0" && s[j + n] <= "9") n++; return n; };
+    const valores = [];
+    let set = null;
+    let i = 0;
+    while (i < s.length){
+      const n = digitosDesde(i);
+      const alFinal = i + n === s.length;
+      const conviene = set === null ? (n >= 4 || (alFinal && n >= 2)) : (n >= 6 || (alFinal && n >= 4));
+      if (set !== "C" && conviene){
+        // Si el tramo es impar, el primer dígito va en B y el resto en parejas.
+        if (n % 2 && set !== null){
+          valores.push(s.charCodeAt(i) - 32);
+          i++;
+        }
+        valores.push(set === null ? 105 : 99);
+        set = "C";
+      }
+      if (set === "C" && digitosDesde(i) >= 2){
+        valores.push(Number(s.slice(i, i + 2)));
+        i += 2;
+        continue;
+      }
+      if (set !== "B"){
+        valores.push(set === null ? 104 : 100);
+        set = "B";
+      }
+      valores.push(s.charCodeAt(i) - 32);
+      i++;
+    }
+    const control = valores.reduce((suma, v, k) => suma + v * (k || 1), 0) % 103;
+    return [...valores, control, 106];
+  }
+
+  // SVG con las barras; cada módulo mide 1 unidad y se deja margen blanco a los lados para que la pistola lo lea.
+  function svgCode128(texto, alto = 46){
+    const valores = valoresCode128(texto);
+    if (!valores) return "";
+    const MARGEN = 10;
+    let x = MARGEN;
+    let barras = "";
+    for (const v of valores){
+      [...CODE128[v]].forEach((ancho, k) => {
+        const w = Number(ancho);
+        if (k % 2 === 0) barras += `M${x} 0h${w}v${alto}h-${w}z`;
+        x += w;
+      });
+    }
+    const total = x + MARGEN;
+    return `<svg class="barras" viewBox="0 0 ${total} ${alto}" style="max-width:${total * 3}px" preserveAspectRatio="none" shape-rendering="crispEdges" role="img" aria-label="Código de barras ${escapeHtml(texto)}"><rect width="${total}" height="${alto}" fill="#fff"/><path d="${barras}" fill="#000"/></svg>`;
+  }
+
+  // ---- QR: códigos de barras guardados en cada faena ----
+  // Los "míos" se guardan solo en este móvil; los del equipo, en Supabase (guardarlos o borrarlos pide la clave).
+  const qrBox = document.getElementById("qr");
+  const codigoGrande = document.getElementById("codigo-grande");
+  let codigosMios = limpiarCodigos(leerLocal("cl1-codigos", []));
+  let codigosEquipo = limpiarCodigos(leerLocal("cl1-codigos-equipo", []));
+  let qrFaena = null;
+  let qrBusqueda = "";
+  // null = formulario cerrado; { id } = editando ese código; {} = código nuevo.
+  let qrEditando = null;
+
+  function limpiarCodigos(lista){
+    return (Array.isArray(lista) ? lista : [])
+      .filter(c => c && c.id && c.faena && typeof c.codigo === "string")
+      .map(c => ({ id:String(c.id), faena:String(c.faena), nombre:String(c.nombre || ""), codigo:String(c.codigo) }));
+  }
+
+  const nuevoId = () => crypto.randomUUID
+    ? crypto.randomUUID()
+    : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+
+  function codigosDe(faena){
+    return [
+      ...codigosEquipo.filter(c => c.faena === faena).map(c => ({ ...c, equipo:true })),
+      ...codigosMios.filter(c => c.faena === faena).map(c => ({ ...c, equipo:false }))
+    ].sort((a, b) => a.nombre.localeCompare(b.nombre, "es") || a.codigo.localeCompare(b.codigo));
+  }
+
+  function renderQr(){
+    if (qrFaena === null) return renderQrFaenas();
+    qrBox.innerHTML = `
+      <div class="qr-head">
+        <button class="btn-mini" type="button" data-qr-volver>← Faenas</button>
+        <h2 class="qr-title">${escapeHtml(qrFaena)}</h2>
+      </div>
+      <div class="qr-tools">
+        <input class="qr-buscar" id="qr-buscar" type="search" placeholder="Buscar por nombre o código" value="${escapeHtml(qrBusqueda)}" autocomplete="off" aria-label="Buscar en esta faena">
+        <button class="btn-primary qr-anadir" type="button" data-qr-nuevo>+ Añadir</button>
+      </div>
+      <div id="qr-form"></div>
+      <div id="qr-lista"></div>`;
+    renderQrForm();
+    renderQrLista();
+  }
+
+  // Las faenas del cuadrante actual; si alguna con códigos ya no está, sale también al final para no perderlos.
+  function renderQrFaenas(){
+    const actuales = [...new Set(FAENAS.map(f => f.codigo))];
+    const antiguas = [...new Set([...codigosEquipo, ...codigosMios].map(c => c.faena))].filter(f => !actuales.includes(f));
+    qrBox.innerHTML = `
+      <p class="page-hint">Elige una faena para ver o guardar sus códigos de barras.</p>
+      <div class="qr-grid">
+        ${[...actuales, ...antiguas].map(f => {
+          const n = codigosDe(f).length;
+          return `<button class="qr-faena ${n ? "con" : ""}" type="button" data-qr-faena="${escapeHtml(f)}">
+            <span class="qr-faena-code">${escapeHtml(f)}</span>
+            <span class="qr-faena-n">${n ? `${n} ${n === 1 ? "código" : "códigos"}` : "Sin códigos"}${antiguas.includes(f) ? " · ya no está en el cuadrante" : ""}</span>
+          </button>`;
+        }).join("")}
+      </div>`;
+  }
+
+  function renderQrLista(){
+    const el = document.getElementById("qr-lista");
+    if (!el) return;
+    const q = normalize(qrBusqueda);
+    const todos = codigosDe(qrFaena);
+    const lista = q ? todos.filter(c => normalize(c.nombre).includes(q) || normalize(c.codigo).includes(q)) : todos;
+    el.innerHTML = lista.length ? lista.map(c => `
+      <div class="qr-item">
+        <div class="qr-item-head">
+          <span class="qr-item-nombre">${escapeHtml(c.nombre || "Sin nombre")}</span>
+          ${c.equipo ? `<span class="qr-badge">👥 Equipo</span>` : ""}
+          <button class="qr-accion" type="button" data-qr-editar="${escapeHtml(c.id)}" aria-label="Editar ${escapeHtml(c.nombre)}">✏️</button>
+          <button class="qr-accion" type="button" data-qr-borrar="${escapeHtml(c.id)}" aria-label="Borrar ${escapeHtml(c.nombre)}">🗑️</button>
+        </div>
+        <button class="qr-barras" type="button" data-qr-grande="${escapeHtml(c.id)}" aria-label="Ver ${escapeHtml(c.nombre)} en grande">
+          ${svgCode128(c.codigo)}
+          <span class="qr-codigo-texto">${escapeHtml(c.codigo)}</span>
+        </button>
+      </div>`).join("")
+      : `<div class="page-empty">${todos.length
+        ? `Ningún código coincide con «${escapeHtml(qrBusqueda)}».`
+        : `<strong>Todavía no hay códigos</strong>Pulsa «+ Añadir» para guardar el primero.`}</div>`;
+  }
+
+  function renderQrForm(){
+    const el = document.getElementById("qr-form");
+    if (!el) return;
+    if (!qrEditando){
+      el.innerHTML = "";
+      return;
+    }
+    const editar = qrEditando.id ? codigosDe(qrFaena).find(c => c.id === qrEditando.id) : null;
+    el.innerHTML = `
+      <div class="qr-form">
+        <label class="field">Nombre
+          <input id="qr-nombre" type="text" maxlength="80" placeholder="Ej. Alzas derecho" value="${escapeHtml(editar?.nombre || "")}" autocomplete="off">
+        </label>
+        <label class="field">Código
+          <input id="qr-codigo" type="text" maxlength="80" placeholder="Ej. 159464554 565" value="${escapeHtml(editar?.codigo || "")}" autocomplete="off" autocapitalize="off" spellcheck="false">
+        </label>
+        <div class="qr-preview" id="qr-preview"></div>
+        ${editar
+          ? `<p class="field-note">${editar.equipo ? "👥 Código del equipo: guardar los cambios pide la clave." : "📱 Guardado solo en este móvil."}</p>`
+          : `<label class="qr-check"><input type="checkbox" id="qr-equipo"> Compartir con todo el equipo <small>(pide la clave)</small></label>`}
+        <label class="field" id="qr-clave-campo" ${editar?.equipo && !claveSesion ? "" : "hidden"}>Clave
+          <input id="qr-clave" type="password" inputmode="numeric" autocomplete="off">
+        </label>
+        <div class="msg" id="qr-msg" role="status" aria-live="polite"></div>
+        <div class="qr-form-botones">
+          <button class="btn-mini" type="button" data-qr-cancelar>Cancelar</button>
+          <button class="btn-primary" id="qr-guardar" type="button" data-qr-guardar>Guardar</button>
+        </div>
+      </div>`;
+    actualizarPreviewQr();
+    document.getElementById(editar ? "qr-codigo" : "qr-nombre").focus();
+  }
+
+  function actualizarPreviewQr(){
+    const codigo = document.getElementById("qr-codigo")?.value ?? "";
+    const el = document.getElementById("qr-preview");
+    if (!el) return;
+    if (!codigo.trim()) el.innerHTML = `<span class="field-note">Aquí verás el código de barras.</span>`;
+    else if (!cabeEnCode128(codigo)) el.innerHTML = `<span class="field-note warn">Lleva letras que el código de barras no admite (ñ, tildes, €…).</span>`;
+    else el.innerHTML = `<div class="qr-barras">${svgCode128(codigo)}<span class="qr-codigo-texto">${escapeHtml(codigo)}</span></div>`;
+  }
+
+  function mensajeQr(texto, tipo = ""){
+    const el = document.getElementById("qr-msg");
+    if (!el) return;
+    el.textContent = texto;
+    el.className = `msg ${tipo}`;
+  }
+
+  async function pedirAlServidor(cuerpo){
+    const res = await fetch(CUADRANTE_URL, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json", apikey:SUPABASE_KEY },
+      body:JSON.stringify(cuerpo)
+    });
+    const r = await res.json().catch(() => ({}));
+    if (r.estado !== "ok" && r.estado !== "pin") throw new Error(r.estado || `HTTP ${res.status}`);
+    return r;
+  }
+
+  async function guardarQr(){
+    const nombre = document.getElementById("qr-nombre").value.trim();
+    // El código va tal cual, con todos sus espacios.
+    const codigo = document.getElementById("qr-codigo").value;
+    if (!codigo.trim()) return mensajeQr("Escribe el código.", "error");
+    if (!cabeEnCode128(codigo)) return mensajeQr("Ese código lleva letras que el código de barras no admite (ñ, tildes, €…).", "error");
+
+    const editar = qrEditando.id ? codigosDe(qrFaena).find(c => c.id === qrEditando.id) : null;
+    const equipo = editar ? editar.equipo : document.getElementById("qr-equipo").checked;
+    const item = { id:editar?.id || nuevoId(), faena:qrFaena, nombre, codigo };
+
+    if (!equipo){
+      codigosMios = [...codigosMios.filter(c => c.id !== item.id), item];
+      guardarLocal("cl1-codigos", codigosMios);
+      qrEditando = null;
+      return renderQr();
+    }
+
+    const clave = claveSesion || document.getElementById("qr-clave").value.trim();
+    if (!clave){
+      document.getElementById("qr-clave-campo").hidden = false;
+      document.getElementById("qr-clave").focus();
+      return mensajeQr("Escribe la clave para compartirlo con el equipo.", "error");
+    }
+    const boton = document.getElementById("qr-guardar");
+    boton.disabled = true;
+    boton.textContent = "Guardando…";
+    try {
+      const r = await pedirAlServidor({ pin:clave, accion:"codigo_guardar", codigo:item });
+      if (r.estado === "pin"){
+        if (claveSesion) guardarClave("");
+        document.getElementById("qr-clave-campo").hidden = false;
+        document.getElementById("qr-clave").select();
+        return mensajeQr("Clave incorrecta.", "error");
+      }
+      if (!claveSesion) guardarClave(clave);
+      codigosEquipo = [...codigosEquipo.filter(c => c.id !== item.id), ...limpiarCodigos([r.codigo || item])];
+      guardarLocal("cl1-codigos-equipo", codigosEquipo);
+      qrEditando = null;
+      renderQr();
+    } catch (err) {
+      console.error(err);
+      mensajeQr("No se pudo guardar. Comprueba la conexión e inténtalo otra vez.", "error");
+    } finally {
+      if (boton.isConnected){
+        boton.disabled = false;
+        boton.textContent = "Guardar";
+      }
+    }
+  }
+
+  async function borrarQr(id){
+    const c = codigosDe(qrFaena).find(x => x.id === id);
+    if (!c) return;
+    if (!confirm(`¿Borrar «${c.nombre || c.codigo}»?${c.equipo ? " Se borrará para todo el equipo." : ""}`)) return;
+    if (!c.equipo){
+      codigosMios = codigosMios.filter(x => x.id !== id);
+      guardarLocal("cl1-codigos", codigosMios);
+      return renderQrLista();
+    }
+    const clave = claveSesion || (prompt("Clave para borrar un código del equipo:") || "").trim();
+    if (!clave) return;
+    try {
+      const r = await pedirAlServidor({ pin:clave, accion:"codigo_borrar", id });
+      if (r.estado === "pin"){
+        if (claveSesion) guardarClave("");
+        return alert("Clave incorrecta.");
+      }
+      if (!claveSesion) guardarClave(clave);
+      codigosEquipo = codigosEquipo.filter(x => x.id !== id);
+      guardarLocal("cl1-codigos-equipo", codigosEquipo);
+      renderQrLista();
+    } catch (err) {
+      console.error(err);
+      alert("No se pudo borrar. Comprueba la conexión e inténtalo otra vez.");
+    }
+  }
+
+  // Vista en grande con fondo blanco, para escanear más fácil.
+  function verCodigoGrande(id){
+    const c = codigosDe(qrFaena).find(x => x.id === id);
+    if (!c) return;
+    codigoGrande.innerHTML = `
+      <div class="codigo-grande-caja">
+        <div class="codigo-grande-nombre">${escapeHtml(c.nombre || qrFaena)}</div>
+        ${svgCode128(c.codigo, 90)}
+        <div class="qr-codigo-texto">${escapeHtml(c.codigo)}</div>
+        <div class="codigo-grande-cerrar">Toca para cerrar</div>
+      </div>`;
+    codigoGrande.hidden = false;
+  }
+  codigoGrande.addEventListener("click", () => { codigoGrande.hidden = true; });
+
+  function refrescarQr(){
+    if (appViews.qr.hidden) return;
+    if (qrFaena === null) renderQrFaenas();
+    else renderQrLista();
+  }
+
+  qrBox.addEventListener("click", e => {
+    const t = e.target;
+    const faena = t.closest("[data-qr-faena]");
+    if (faena){
+      qrFaena = faena.dataset.qrFaena;
+      qrBusqueda = "";
+      qrEditando = null;
+      renderQr();
+      qrBox.closest(".page-view").scrollTop = 0;
+      return;
+    }
+    if (t.closest("[data-qr-volver]")){
+      qrFaena = null;
+      qrEditando = null;
+      return renderQr();
+    }
+    if (t.closest("[data-qr-nuevo]")){
+      qrEditando = {};
+      return renderQrForm();
+    }
+    if (t.closest("[data-qr-cancelar]")){
+      qrEditando = null;
+      return renderQrForm();
+    }
+    if (t.closest("[data-qr-guardar]")) return guardarQr();
+    const editar = t.closest("[data-qr-editar]");
+    if (editar){
+      qrEditando = { id:editar.dataset.qrEditar };
+      renderQrForm();
+      document.getElementById("qr-form").scrollIntoView({ block:"start", behavior:"smooth" });
+      return;
+    }
+    const borrar = t.closest("[data-qr-borrar]");
+    if (borrar) return borrarQr(borrar.dataset.qrBorrar);
+    const grande = t.closest("[data-qr-grande]");
+    if (grande) verCodigoGrande(grande.dataset.qrGrande);
+  });
+
+  qrBox.addEventListener("input", e => {
+    if (e.target.id === "qr-buscar"){
+      qrBusqueda = e.target.value;
+      renderQrLista();
+    } else if (e.target.id === "qr-codigo") actualizarPreviewQr();
+  });
+  qrBox.addEventListener("change", e => {
+    if (e.target.id === "qr-equipo") document.getElementById("qr-clave-campo").hidden = !e.target.checked || Boolean(claveSesion);
+  });
+  qrBox.addEventListener("keydown", e => {
+    if (e.key === "Enter" && ["qr-nombre", "qr-codigo", "qr-clave"].includes(e.target.id)){
+      e.preventDefault();
+      guardarQr();
     }
   });
 
