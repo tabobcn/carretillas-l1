@@ -1,4 +1,4 @@
-const CACHE_NAME = "carretillas-l1-v8";
+const CACHE_NAME = "carretillas-l1-v10";
 const APP_SHELL = [
   "./",
   "index.html",
@@ -61,5 +61,36 @@ self.addEventListener("fetch", (event) => {
 
       return Response.error();
     }
+  })());
+});
+
+// Avisos de cuadrante nuevo (los envía la función "cuadrante" de Supabase al publicar).
+self.addEventListener("push", (event) => {
+  let aviso = {};
+  try {
+    aviso = event.data ? event.data.json() : {};
+  } catch {
+    aviso = { body: event.data?.text() };
+  }
+  event.waitUntil(self.registration.showNotification(aviso.title || "Carretillas L1", {
+    body: aviso.body || "",
+    icon: "icon-192.png",
+    tag: "cuadrante",
+    renotify: true,
+    data: { url: aviso.url || "./" }
+  }));
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const destino = new URL(event.notification.data?.url || "./", self.registration.scope).href;
+  event.waitUntil((async () => {
+    const ventanas = await self.clients.matchAll({ type:"window", includeUncontrolled:true });
+    const abierta = ventanas.find((v) => v.url.startsWith(self.registration.scope));
+    if (abierta) {
+      abierta.postMessage({ type:"ABRIR", url:destino });
+      return abierta.focus();
+    }
+    return self.clients.openWindow(destino);
   })());
 });
