@@ -573,6 +573,36 @@
   .btn-primary:disabled{ opacity:.6; cursor:default; }
   .btn-primary:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; }
   .drawer-sep{ height:1px; margin:6px 10px 12px; background:var(--border); }
+  .page-subtitle{ margin:26px 2px 4px; font-size:1rem; font-weight:800; }
+  .publicada{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:9px 10px 9px 12px;
+    margin-bottom:6px;
+    border:1px solid var(--border);
+    border-radius:12px;
+    background:linear-gradient(155deg, var(--surface-2), var(--surface));
+  }
+  .publicada-text{ flex:1 1 auto; min-width:0; }
+  .publicada-kw{ display:block; font-size:.95rem; font-weight:800; }
+  .publicada-sub{ display:block; margin-top:2px; font-size:.72rem; color:var(--text-dim); }
+  .btn-borrar{
+    flex:0 0 auto;
+    min-height:38px;
+    padding:6px 12px;
+    border:1px solid rgba(255,138,128,.45);
+    border-radius:10px;
+    background:rgba(255,138,128,.1);
+    color:#ff8a80;
+    font:inherit;
+    font-size:.82rem;
+    font-weight:800;
+    cursor:pointer;
+    touch-action:manipulation;
+  }
+  .btn-borrar:disabled{ opacity:.6; cursor:default; }
+  .btn-borrar:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; }
 
   .inapp-banner{
     max-width:560px;
@@ -790,11 +820,16 @@
         <span class="field-note" id="subir-fechas"></span>
       </div>
       <div class="preview-scroll"><table class="preview-table" id="subir-tabla"></table></div>
-      <label class="field">PIN de subida
-        <input id="subir-pin" type="password" inputmode="numeric" autocomplete="off" enterkeyhint="send">
-      </label>
-      <button class="btn-primary" id="subir-publicar" type="button">Publicar</button>
     </div>
+    <label class="field">PIN de subida
+      <input id="subir-pin" type="password" inputmode="numeric" autocomplete="off" enterkeyhint="send">
+    </label>
+    <button class="btn-primary" id="subir-publicar" type="button" hidden>Publicar</button>
+
+    <h3 class="page-subtitle">Semanas publicadas</h3>
+    <p class="page-hint">Si una semana se subió mal, bórrala con el PIN y vuelve a subirla. Para corregir datos basta con subir otra vez el Excel con la misma semana.</p>
+    <div id="subir-semanas"></div>
+    <div class="msg" id="subir-semanas-msg" role="status" aria-live="polite"></div>
   </div>
 </section>
 
@@ -973,8 +1008,9 @@
     brandLogo.closest(".topbar").classList.toggle("compact", name !== "inicio");
     searchButton.hidden = name !== "inicio";
     renderHoy();
-    if (name === "cuadrante") {
-      renderCuadrante();
+    if (name === "cuadrante" || name === "subir") {
+      if (name === "cuadrante") renderCuadrante();
+      else renderPublicadas();
       cargarSemanas();
     }
     setDrawer(false);
@@ -1155,6 +1191,7 @@
     render();
     renderHoy();
     if (!appViews.cuadrante.hidden) renderCuadrante();
+    if (!appViews.subir.hidden) renderPublicadas();
   }
 
   // Al abrir la app, tu tarjeta de hoy se da la vuelta sola hasta que la cierres tú.
@@ -1418,7 +1455,7 @@
     const archivo = subirArchivo.files[0];
     if (!archivo) return;
     leido = null;
-    subirPreview.hidden = true;
+    subirPreview.hidden = subirPublicar.hidden = true;
     subirArchivoTexto.textContent = `📄 ${archivo.name}`;
     mensajeSubida("Leyendo el Excel…");
     try {
@@ -1451,7 +1488,7 @@
     subirKw.value = leido.kw || "";
     actualizarFechasSubida();
     mensajeSubida(`He leído ${leido.filas.length} faenas y ${leido.dias.length} días. Revisa que esté bien, pon el PIN y publica.`);
-    subirPreview.hidden = false;
+    subirPreview.hidden = subirPublicar.hidden = false;
   });
 
   subirKw.addEventListener("input", actualizarFechasSubida);
@@ -1492,7 +1529,7 @@
 
       subirPin.value = "";
       mensajeSubida(`✅ Cuadrante de la semana ${kw} publicado. Ya lo ven todos.`, "ok");
-      subirPreview.hidden = true;
+      subirPreview.hidden = subirPublicar.hidden = true;
       subirArchivo.value = "";
       subirArchivoTexto.textContent = "📄 Elegir Excel";
       semanaVista = `${anio}-${kw}`;
@@ -1504,6 +1541,70 @@
     } finally {
       subirPublicar.disabled = false;
       subirPublicar.textContent = "Publicar";
+    }
+  });
+
+  // ---- Borrar una semana publicada ----
+  const subirSemanas = document.getElementById("subir-semanas");
+  const subirSemanasMsg = document.getElementById("subir-semanas-msg");
+
+  function renderPublicadas(){
+    if (!semanas.length){
+      subirSemanas.innerHTML = `<p class="page-hint">No hay ninguna semana publicada.</p>`;
+      return;
+    }
+    subirSemanas.innerHTML = semanas.map(s => {
+      const lunes = lunesDeSemana(s.anio, s.kw);
+      return `<div class="publicada">
+        <span class="publicada-text">
+          <span class="publicada-kw">Semana ${s.kw}</span>
+          <span class="publicada-sub">${escapeHtml(`${fechaCorta(lunes)} – ${fechaCorta(sumarDias(lunes, 4))} ${s.anio} · ${relacionConHoy(s)}`)}</span>
+        </span>
+        <button class="btn-borrar" type="button" data-borrar="${claveSemana(s)}">Borrar</button>
+      </div>`;
+    }).join("");
+  }
+
+  subirSemanas.addEventListener("click", async e => {
+    const boton = e.target.closest("[data-borrar]");
+    if (!boton) return;
+    const [anio, kw] = boton.dataset.borrar.split("-").map(Number);
+    subirSemanasMsg.textContent = "";
+    subirSemanasMsg.className = "msg";
+    if (!subirPin.value){
+      subirSemanasMsg.textContent = "Escribe el PIN de subida (arriba) para poder borrar.";
+      subirSemanasMsg.className = "msg error";
+      subirPin.focus();
+      return;
+    }
+    if (!confirm(`¿Borrar el cuadrante de la semana ${kw}? Dejará de verse para todos.`)) return;
+
+    boton.disabled = true;
+    boton.textContent = "Borrando…";
+    try {
+      const res = await fetch(CUADRANTE_URL, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json", apikey:SUPABASE_KEY },
+        body:JSON.stringify({ pin:subirPin.value, anio, kw, accion:"borrar" })
+      });
+      const { estado } = await res.json().catch(() => ({}));
+      if (estado === "pin"){
+        subirSemanasMsg.textContent = "PIN incorrecto.";
+        subirSemanasMsg.className = "msg error";
+        subirPin.select();
+        return;
+      }
+      if (estado !== "ok" && estado !== "no_existe") throw new Error(estado || `HTTP ${res.status}`);
+      subirSemanasMsg.textContent = `🗑️ Semana ${kw} borrada.`;
+      subirSemanasMsg.className = "msg ok";
+      await cargarSemanas(true);
+    } catch (err) {
+      console.error(err);
+      subirSemanasMsg.textContent = "No se pudo borrar. Comprueba la conexión e inténtalo otra vez.";
+      subirSemanasMsg.className = "msg error";
+    } finally {
+      boton.disabled = false;
+      boton.textContent = "Borrar";
     }
   });
 
