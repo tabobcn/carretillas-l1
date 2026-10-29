@@ -27,6 +27,7 @@
     --text-dim:#8b93a1;
     --accent:#ff8c1a;
     --accent-2:#ffb04d;
+    --mine:#2dd478;
   }
   *{ box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html,body{ height:100%; margin:0; }
@@ -312,9 +313,9 @@
     max-width:540px;
     margin:2px auto 6px;
     padding:7px 12px;
-    border:1px solid rgba(255,140,26,.38);
+    border:1px solid rgba(45,212,120,.45);
     border-radius:12px;
-    background:rgba(255,140,26,.12);
+    background:rgba(45,212,120,.12);
     color:var(--text);
     font:inherit;
     text-align:left;
@@ -329,7 +330,7 @@
     font-weight:800;
     letter-spacing:.08em;
     text-transform:uppercase;
-    color:var(--accent-2);
+    color:var(--mine);
   }
   .hoy-main{
     display:block;
@@ -341,11 +342,31 @@
     text-overflow:ellipsis;
   }
   .hoy-arrow{ flex:0 0 auto; color:var(--text-dim); }
-  .card.mine .card-front{
-    border-color:var(--accent);
-    box-shadow:0 0 0 1px var(--accent) inset, 0 8px 18px -12px rgba(0,0,0,.7);
+  /* Tu faena de hoy: en verde para que destaque entre todas las naranjas. */
+  .card.mine .card-face{ animation:mine-glow 2.2s ease-in-out infinite; }
+  .card.mine .card-front{ border-color:var(--mine); }
+  .card.mine .card-front::before{
+    content:"HOY";
+    position:absolute;
+    top:6px;
+    right:6px;
+    z-index:1;
+    padding:2px 6px;
+    border-radius:6px;
+    background:var(--mine);
+    color:#04210f;
+    font-size:.56rem;
+    font-weight:900;
+    letter-spacing:.08em;
   }
-  .card.mine .card-num{ background:var(--accent); color:#1c1200; border-color:var(--accent); }
+  .card.mine .card-chev{ display:none; }
+  .card.mine .card-num{ background:var(--mine); color:#04210f; border-color:var(--mine); }
+  .card.mine .card-back{ background:linear-gradient(155deg, #6ff0a4, var(--mine) 60%, #14a85a); color:#04210f; }
+  .card.mine .stripe{ background:repeating-linear-gradient(45deg, #04210f 0 8px, transparent 8px 16px); }
+  @keyframes mine-glow{
+    0%, 100%{ box-shadow:0 0 0 2px var(--mine), 0 0 10px rgba(45,212,120,.35); }
+    50%{ box-shadow:0 0 0 2px var(--mine), 0 0 24px rgba(45,212,120,.75); }
+  }
 
   .page-view{
     flex:1 1 auto;
@@ -724,6 +745,7 @@
       transition-duration:.01ms;
     }
     .card-front::after{ animation:none; }
+    .card.mine .card-face{ animation:none; box-shadow:0 0 0 2px var(--mine), 0 0 16px rgba(45,212,120,.55); }
   }
 </style>
 </head>
@@ -890,6 +912,9 @@
   let openCard = null;
   function toggleCard(card){
     const willOpen = !card.classList.contains("flipped");
+    if ((!willOpen && card.classList.contains("mine")) || (openCard && openCard !== card && openCard.classList.contains("mine"))) {
+      miTarjetaCerrada = true;
+    }
     if (openCard && openCard !== card){
       openCard.classList.remove("flipped");
       openCard.setAttribute("aria-pressed", "false");
@@ -1132,8 +1157,14 @@
     if (!appViews.cuadrante.hidden) renderCuadrante();
   }
 
+  // Al abrir la app, tu tarjeta de hoy se da la vuelta sola hasta que la cierres tú.
+  let miTarjetaCerrada = false;
+
   function renderHoy(){
-    document.querySelectorAll("#list .card.mine").forEach(c => c.classList.remove("mine"));
+    document.querySelectorAll("#list .card.mine").forEach(c => {
+      c.classList.remove("mine");
+      c.querySelector(".card-back-label").textContent = "Máquina";
+    });
     const activa = semanaActual();
     const col = columnaDeHoy(activa);
     if (!yo || col < 0 || appViews.inicio.hidden){
@@ -1152,7 +1183,12 @@
           <span class="hoy-main">${escapeHtml(f.codigo)} → ${escapeHtml(f.tractora || "sin máquina")}</span>
         </span>
         <svg class="hoy-arrow" aria-hidden="true" viewBox="0 0 24 24" width="16" height="16"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
-      document.querySelectorAll("#list .card")[i]?.classList.add("mine");
+      const card = document.querySelectorAll("#list .card")[i];
+      if (card){
+        card.classList.add("mine");
+        card.querySelector(".card-back-label").textContent = "Tu máquina hoy";
+        if (!miTarjetaCerrada && !card.classList.contains("flipped")) toggleCard(card);
+      }
     }
     hoyBanner.dataset.index = String(i);
     hoyBanner.hidden = false;
@@ -1277,7 +1313,9 @@
       const res = await fetch(CUADRANTE_URL, { headers:{ apikey:SUPABASE_KEY }, cache:"no-store" });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const respuesta = await res.json();
-      semanas = prepararSemanas(respuesta.semanas);
+      const nuevas = prepararSemanas(respuesta.semanas);
+      if (JSON.stringify(nuevas) === JSON.stringify(semanas)) return;
+      semanas = nuevas;
       guardarLocal("cl1-semanas", semanas);
       aplicarSemana();
     } catch (err) {
