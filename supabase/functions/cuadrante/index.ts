@@ -1,6 +1,7 @@
 // Guarda y sirve los cuadrantes semanales de Carretillas L1.
 // GET  -> { semanas: [...] } (más reciente primero)
 // POST -> { pin, anio, kw, datos } publica o reemplaza la semana indicada.
+// POST -> { pin, anio, kw, accion: "borrar" } borra la semana indicada.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 
 const BUCKET = "cuadrantes";
@@ -94,12 +95,21 @@ Deno.serve(async (req) => {
 
       const anio = Number(body.anio);
       const kw = Number(body.kw);
-      const datos = limpiarDatos(body.datos);
-      if (!Number.isInteger(anio) || anio < 2024 || anio > 2100 || !Number.isInteger(kw) || kw < 1 || kw > 53 || !datos) {
+      if (!Number.isInteger(anio) || anio < 2024 || anio > 2100 || !Number.isInteger(kw) || kw < 1 || kw > 53) {
         return responder({ estado: "datos" }, 400);
       }
 
-      const lista = (await leerSemanas()).filter((s) => !(s.anio === anio && s.kw === kw));
+      const semanas = await leerSemanas();
+      const lista = semanas.filter((s) => !(s.anio === anio && s.kw === kw));
+
+      if (body.accion === "borrar") {
+        if (lista.length === semanas.length) return responder({ estado: "no_existe" }, 404);
+        await guardarSemanas(lista);
+        return responder({ estado: "ok" });
+      }
+
+      const datos = limpiarDatos(body.datos);
+      if (!datos) return responder({ estado: "datos" }, 400);
       lista.push({ anio, kw, publicado: new Date().toISOString(), datos });
       lista.sort((a, b) => (b.anio * 100 + b.kw) - (a.anio * 100 + a.kw));
       await guardarSemanas(lista.slice(0, MAX_SEMANAS));
