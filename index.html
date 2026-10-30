@@ -689,6 +689,35 @@
   }
   .clave-fila .btn-primary{ width:auto; margin-top:0; padding:0 22px; }
 
+  .interruptor{
+    display:flex; align-items:center; gap:10px; margin:0 2px 10px; cursor:pointer;
+    font-size:.76rem; line-height:1.35; color:var(--text-dim);
+  }
+  .interruptor strong{ display:block; font-size:.86rem; color:var(--text); }
+  .interruptor input{ position:absolute; opacity:0; pointer-events:none; }
+  .interruptor-pista{
+    position:relative; flex:0 0 auto; width:44px; height:26px; border-radius:999px;
+    background:rgba(255,255,255,.14); transition:background-color .15s ease;
+  }
+  .interruptor-pista::after{
+    content:""; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%;
+    background:#fff; transition:transform .15s ease;
+  }
+  .interruptor input:checked + .interruptor-pista{ background:var(--accent); }
+  .interruptor input:checked + .interruptor-pista::after{ transform:translateX(18px); }
+  .interruptor input:focus-visible + .interruptor-pista{ outline:3px solid var(--accent-2); outline-offset:2px; }
+  .reserva-form{ display:flex; gap:6px; margin-top:4px; }
+  .reserva-form select, .reserva-form input{
+    min-width:0; min-height:40px; padding:6px 10px;
+    border:1px solid rgba(255,140,26,.38); border-radius:10px;
+    background:#0f1216; color:var(--text); font:inherit; font-size:.86rem; font-weight:700;
+  }
+  .reserva-form select{ flex:1 1 55%; }
+  .reserva-form input{ flex:1 1 30%; text-transform:uppercase; }
+  .reserva-form .btn-mini{ margin-left:0; }
+  .check-avisar{ display:flex; align-items:center; gap:8px; margin:8px 2px 0; font-size:.8rem; color:var(--text-dim); }
+  .check-avisar input{ width:18px; height:18px; accent-color:var(--accent); }
+
   .equipo-box{
     margin:0 0 8px;
     padding:8px 10px;
@@ -1067,6 +1096,17 @@
     font-size:1.62rem; font-weight:800; line-height:1.1; word-break:break-word;
     user-select:text; -webkit-user-select:text;
   }
+  .card-back-tachada{
+    font-size:.86rem; font-weight:800; opacity:.7;
+    text-decoration:line-through; text-decoration-thickness:2px;
+  }
+  .card-reserva{
+    display:inline-block; margin-top:3px; padding:1px 6px; border-radius:6px;
+    background:rgba(255,204,128,.16); color:#ffcc80; font-size:.66rem; font-weight:800;
+  }
+  .maq-oficial{ opacity:.65; text-decoration-thickness:2px; }
+  .maq-reserva{ display:block; margin-top:1px; font-weight:800; color:#ffcc80; }
+  .pr-table .maq-reserva, .pr-bn .maq-reserva{ color:inherit; }
   .card-back-sub{
     font-size:.92rem; font-weight:700; opacity:.9; line-height:1.18; word-break:break-word;
     margin-top:3px;
@@ -1185,6 +1225,11 @@
         <span class="field-note" id="subir-fechas"></span>
         <button class="btn-mini" id="subir-vaciar" type="button">Quitar nombres</button>
       </div>
+      <label class="interruptor">
+        <input type="checkbox" id="copiar-semana" checked>
+        <span class="interruptor-pista" aria-hidden="true"></span>
+        <span><strong>Copiar a toda la semana</strong> Al elegir a alguien se rellenan también los días siguientes. Apágalo para cambiar solo una casilla.</span>
+      </label>
       <details class="equipo-box">
         <summary>👥 Equipo (<span id="equipo-total">0</span>) · añadir o quitar personas</summary>
         <div class="equipo-chips" id="equipo-chips"></div>
@@ -1198,6 +1243,17 @@
       <div class="preview-scroll"><table class="preview-table editor" id="subir-tabla"></table></div>
     </div>
     <button class="btn-primary" id="subir-publicar" type="button" hidden>Publicar</button>
+
+    <h3 class="page-subtitle">🔧 Máquinas de reserva</h3>
+    <p class="page-hint">Si se estropea una máquina y traen otra de reserva, apúntalo aquí. En toda la app saldrá la oficial tachada y debajo la de reserva. Cuando vuelva la oficial, quita la reserva.</p>
+    <div id="reservas-lista"></div>
+    <div class="reserva-form">
+      <select id="reserva-oficial" aria-label="Máquina estropeada"></select>
+      <input id="reserva-numero" type="text" placeholder="Nº reserva" autocomplete="off" enterkeyhint="done" aria-label="Número de la máquina de reserva">
+      <button class="btn-mini" id="reserva-poner" type="button">Poner</button>
+    </div>
+    <label class="check-avisar"><input type="checkbox" id="reserva-avisar" checked> Avisar a todos con una notificación</label>
+    <div class="msg" id="reservas-msg" role="status" aria-live="polite"></div>
 
     <h3 class="page-subtitle">Semanas publicadas</h3>
     <p class="page-hint">Si una semana se subió mal, bórrala y vuelve a subirla. Para corregir datos basta con publicar otra vez la misma semana.</p>
@@ -1297,6 +1353,24 @@
   ];
   let FAENAS = FAENAS_BASE;
 
+  // Máquinas de reserva activas: [{ oficial, reserva, faena, desde }]. Van por máquina oficial,
+  // así la reserva sigue a la máquina aunque cambie de faena en otra semana.
+  let RESERVAS = (() => {
+    try { return JSON.parse(localStorage.getItem("cl1-reservas")) || []; } catch { return []; }
+  })();
+  function claveMaquina(m){ return String(m || "").normalize("NFD").replace(/[^a-z0-9]/gi, "").toLowerCase(); }
+  function reservaDe(tractora){
+    const clave = claveMaquina(tractora);
+    return clave ? RESERVAS.find(r => claveMaquina(r.oficial) === clave) || null : null;
+  }
+  // La oficial tachada y debajo la de reserva.
+  function htmlMaquina(tractora){
+    const r = reservaDe(tractora);
+    return r
+      ? `<s class="maq-oficial">${escapeHtml(tractora)}</s><span class="maq-reserva">Reserva: ${escapeHtml(r.reserva)}</span>`
+      : escapeHtml(tractora);
+  }
+
   function escapeHtml(str){
     return String(str).replace(/[&<>"']/g, c => ({
       "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
@@ -1305,7 +1379,7 @@
 
   function render(){
     const list = document.getElementById("list");
-    list.innerHTML = FAENAS.map((f, i) => `
+    list.innerHTML = FAENAS.map((f, i) => { const r = reservaDe(f.tractora); return `
       <button class="card" type="button" data-code="${escapeHtml(f.codigo)}" aria-pressed="false" aria-label="${escapeHtml(f.codigo)}: mostrar máquina">
         <div class="card-inner">
           <div class="card-face card-front">
@@ -1313,18 +1387,20 @@
             <div class="card-main">
               <div class="card-code">${escapeHtml(f.codigo)}</div>
               ${f.nota ? `<div class="card-note">${escapeHtml(f.nota)}</div>` : ""}
+              ${r ? `<div class="card-reserva">🔧 Reserva</div>` : ""}
             </div>
             <svg class="card-chev" aria-hidden="true" viewBox="0 0 24 24" width="13" height="13"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div class="card-face card-back">
             <div class="stripe"></div>
-            <div class="card-back-label">Máquina</div>
-            <div class="card-back-main">${escapeHtml(f.tractora)}</div>
+            <div class="card-back-label" data-base="${r ? "Máquina de reserva" : "Máquina"}">${r ? "Máquina de reserva" : "Máquina"}</div>
+            ${r ? `<div class="card-back-tachada">${escapeHtml(f.tractora)}</div>` : ""}
+            <div class="card-back-main">${escapeHtml(r ? r.reserva : f.tractora)}</div>
             <div class="card-back-sub">${escapeHtml(f.id)}</div>
           </div>
         </div>
       </button>
-    `).join("");
+    `; }).join("");
   }
 
   let openCard = null;
@@ -1402,6 +1478,7 @@
       if (name === "cuadrante") renderCuadrante();
       else {
         renderPublicadas();
+        renderReservas();
         mostrarSubir();
       }
       cargarSemanas();
@@ -1436,7 +1513,7 @@
     }
     const matches = FAENAS
       .map((f, i) => ({ f, i }))
-      .filter(({ f }) => normalize(f.tractora).includes(query) || normalize(f.id).includes(query));
+      .filter(({ f }) => [f.tractora, f.id, reservaDe(f.tractora)?.reserva].some(t => t && normalize(t).includes(query)));
     if (!matches.length){
       searchResults.innerHTML = `<div class="search-hint">Ninguna máquina coincide con «${escapeHtml(searchInput.value.trim())}»</div>`;
       return;
@@ -1444,7 +1521,7 @@
     searchResults.innerHTML = matches.map(({ f, i }) => `
       <button class="search-result" type="button" data-index="${i}" aria-label="${escapeHtml(f.tractora)}: faena ${escapeHtml(f.codigo)}">
         <span class="search-result-machine">
-          <span class="search-result-name">${escapeHtml(f.tractora)}</span>
+          <span class="search-result-name">${htmlMaquina(f.tractora)}</span>
           <span class="search-result-id">${escapeHtml(f.id)}</span>
         </span>
         <span class="search-result-arrow" aria-hidden="true">→</span>
@@ -1586,7 +1663,10 @@
     render();
     renderHoy();
     if (!appViews.cuadrante.hidden) renderCuadrante();
-    if (!appViews.subir.hidden) renderPublicadas();
+    if (!appViews.subir.hidden){
+      renderPublicadas();
+      renderReservas();
+    }
     if (!appViews.qr.hidden && qrFaena === null) renderQrFaenas();
   }
 
@@ -1596,7 +1676,8 @@
   function renderHoy(){
     document.querySelectorAll("#list .card.mine").forEach(c => {
       c.classList.remove("mine");
-      c.querySelector(".card-back-label").textContent = "Máquina";
+      const etiqueta = c.querySelector(".card-back-label");
+      etiqueta.textContent = etiqueta.dataset.base;
     });
     const activa = semanaActual();
     const col = columnaDeHoy(activa);
@@ -1613,13 +1694,13 @@
       hoyBanner.innerHTML = `
         <span class="hoy-text">
           <span class="hoy-label">Hoy · ${escapeHtml(dia)} · ${escapeHtml(yo)}</span>
-          <span class="hoy-main">${escapeHtml(f.codigo)} → ${escapeHtml(f.tractora || "sin máquina")}</span>
+          <span class="hoy-main">${escapeHtml(f.codigo)} → ${escapeHtml(reservaDe(f.tractora) ? `${reservaDe(f.tractora).reserva} (reserva)` : f.tractora || "sin máquina")}</span>
         </span>
         <svg class="hoy-arrow" aria-hidden="true" viewBox="0 0 24 24" width="16" height="16"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
       const card = document.querySelectorAll("#list .card")[i];
       if (card){
         card.classList.add("mine");
-        card.querySelector(".card-back-label").textContent = "Tu máquina hoy";
+        card.querySelector(".card-back-label").textContent = reservaDe(f.tractora) ? "Tu máquina hoy · reserva" : "Tu máquina hoy";
         if (!miTarjetaCerrada && !card.classList.contains("flipped")) toggleCard(card);
       }
     }
@@ -1697,7 +1778,7 @@
       return `<div class="cuad-row ${yo && mismaPersona(persona, yo) ? "mine" : ""}">
         <div class="cuad-faena">${escapeHtml(f.codigo)}${f.nota ? `<small>${escapeHtml(f.nota)}</small>` : ""}</div>
         <div class="cuad-persona ${persona ? "" : "vacia"}">${persona ? escapeHtml(persona) : "—"}</div>
-        <div class="cuad-maquina">${escapeHtml(f.tractora)}${f.id ? `<small>${escapeHtml(f.id)}</small>` : ""}</div>
+        <div class="cuad-maquina">${htmlMaquina(f.tractora)}${f.id ? `<small>${escapeHtml(f.id)}</small>` : ""}</div>
       </div>`;
     }).join("");
 
@@ -1766,7 +1847,7 @@
               const cambia = c > 0 && !mismaPersona(p, f.personas[c - 1]) && p;
               return `<td class="${c === 0 || cambia ? "pr-cambio" : ""}">${escapeHtml(p || "—")}</td>`;
             }).join("")}
-            <td class="pr-maq">${escapeHtml(f.tractora)}</td>
+            <td class="pr-maq">${htmlMaquina(f.tractora)}</td>
             <td class="pr-id">${escapeHtml(f.id)}</td>
           </tr>`).join("")}
         </tbody>
@@ -1826,8 +1907,12 @@
           refrescarQr();
         }
       }
+      const reservasCambiadas = Array.isArray(respuesta.reservas) && aplicarReservas(respuesta.reservas);
       const nuevas = prepararSemanas(respuesta.semanas);
-      if (JSON.stringify(nuevas) === JSON.stringify(semanas)) return;
+      if (JSON.stringify(nuevas) === JSON.stringify(semanas)){
+        if (reservasCambiadas) aplicarSemana();
+        return;
+      }
       semanas = nuevas;
       guardarLocal("cl1-semanas", semanas);
       aplicarSemana();
@@ -2082,6 +2167,10 @@
     guardarBorrador();
   }
 
+  const copiarSemana = document.getElementById("copiar-semana");
+  copiarSemana.checked = leerLocal("cl1-copiar-semana", true);
+  copiarSemana.addEventListener("change", () => guardarLocal("cl1-copiar-semana", copiarSemana.checked));
+
   subirTabla.addEventListener("change", e => {
     const campo = e.target.closest(".ed-texto");
     if (campo){
@@ -2095,12 +2184,12 @@
     const dia = Number(sel.dataset.dia);
     let nuevo = sel.value;
     if (nuevo === "__otro") nuevo = anadirAlEquipo(prompt("Nombre del carretillero:"));
-    // Al elegir un nombre, los días siguientes que tenían lo mismo (o nada) pasan a tenerlo también,
-    // salvo que ese día ya esté en otra faena.
+    // Con "Copiar a toda la semana", los días siguientes que tenían lo mismo (o nada) pasan a tenerlo
+    // también, salvo que ese día ya esté en otra faena. Apagado, solo cambia esta casilla.
     const anterior = fila.personas[dia] || "";
     const ocupadoEn = d => nuevo && leido.filas.some(f => f !== fila && mismaPersona(f.personas[d], nuevo));
     fila.personas[dia] = nuevo;
-    for (let d = dia + 1; d < fila.personas.length; d++){
+    for (let d = dia + 1; copiarSemana.checked && d < fila.personas.length; d++){
       const p = fila.personas[d] || "";
       if ((p !== anterior && p !== "") || ocupadoEn(d)) break;
       fila.personas[d] = nuevo;
@@ -2294,6 +2383,97 @@
       subirPublicar.disabled = false;
       subirPublicar.textContent = "Publicar";
     }
+  });
+
+  // ---- Máquinas de reserva ----
+  const reservasLista = document.getElementById("reservas-lista");
+  const reservaOficial = document.getElementById("reserva-oficial");
+  const reservaNumero = document.getElementById("reserva-numero");
+  const reservaPoner = document.getElementById("reserva-poner");
+  const reservaAvisar = document.getElementById("reserva-avisar");
+  const reservasMsg = document.getElementById("reservas-msg");
+
+  // Devuelve true si han cambiado.
+  function aplicarReservas(lista){
+    const limpias = lista
+      .filter(r => r && r.oficial && r.reserva)
+      .map(r => ({ oficial:String(r.oficial), reserva:String(r.reserva), faena:String(r.faena || ""), desde:String(r.desde || "") }));
+    if (JSON.stringify(limpias) === JSON.stringify(RESERVAS)) return false;
+    RESERVAS = limpias;
+    guardarLocal("cl1-reservas", RESERVAS);
+    return true;
+  }
+
+  function mensajeReservas(texto, tipo = ""){
+    reservasMsg.textContent = texto;
+    reservasMsg.className = `msg ${tipo}`;
+  }
+
+  function renderReservas(){
+    reservasLista.innerHTML = RESERVAS.map(r => {
+      const desde = r.desde ? new Date(r.desde) : null;
+      return `<div class="publicada">
+        <span class="publicada-text">
+          <span class="publicada-kw">${escapeHtml(r.faena || "Máquina")}</span>
+          <span class="publicada-sub"><s>${escapeHtml(r.oficial)}</s> → reserva <strong>${escapeHtml(r.reserva)}</strong>${desde && !isNaN(desde) ? ` · desde el ${desde.toLocaleDateString("es-ES", { day:"numeric", month:"short" })}` : ""}</span>
+        </span>
+        <button class="btn-borrar" type="button" data-quitar-reserva="${escapeHtml(r.oficial)}">Quitar</button>
+      </div>`;
+    }).join("") || `<p class="page-hint">Ahora mismo no hay ninguna máquina de reserva.</p>`;
+
+    const libres = FAENAS.filter(f => f.tractora && !reservaDe(f.tractora));
+    reservaOficial.innerHTML = `<option value="">Máquina estropeada…</option>` +
+      libres.map(f => `<option value="${escapeHtml(f.tractora)}" data-faena="${escapeHtml(f.codigo)}">${escapeHtml(f.codigo)} · ${escapeHtml(f.tractora)}</option>`).join("");
+  }
+
+  async function cambiarReserva(datos, boton){
+    boton.disabled = true;
+    mensajeReservas("Guardando…");
+    try {
+      const res = await fetch(CUADRANTE_URL, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json", apikey:SUPABASE_KEY },
+        body:JSON.stringify({ pin:claveSesion, avisar:reservaAvisar.checked, ...datos })
+      });
+      const r = await res.json().catch(() => ({}));
+      if (r.estado === "pin") return claveCaducada();
+      if (r.estado === "bloqueado") return mensajeReservas(MSG_BLOQUEADO, "error");
+      if (r.estado !== "ok" && r.estado !== "no_existe") throw new Error(r.estado || `HTTP ${res.status}`);
+      if (Array.isArray(r.reservas)) aplicarReservas(r.reservas);
+      aplicarSemana();
+      const avisos = r.avisados ? ` Avisados ${r.avisados} ${r.avisados === 1 ? "móvil" : "móviles"}.` : "";
+      mensajeReservas(datos.accion === "reserva"
+        ? `✅ Puesta la reserva ${datos.reserva} en lugar de la ${datos.oficial}.${avisos}`
+        : `✅ Vuelve la ${datos.oficial}.${avisos}`, "ok");
+      return true;
+    } catch (err) {
+      console.error(err);
+      mensajeReservas("No se pudo guardar. Comprueba la conexión e inténtalo otra vez.", "error");
+    } finally {
+      boton.disabled = false;
+    }
+  }
+
+  reservaPoner.addEventListener("click", async () => {
+    const opcion = reservaOficial.selectedOptions[0];
+    const reserva = reservaNumero.value.trim().toUpperCase();
+    if (!reservaOficial.value) return mensajeReservas("Elige la máquina que se ha estropeado.", "error");
+    if (!reserva) {
+      reservaNumero.focus();
+      return mensajeReservas("Escribe el número de la máquina de reserva.", "error");
+    }
+    const hecho = await cambiarReserva({ accion:"reserva", oficial:reservaOficial.value, reserva, faena:opcion.dataset.faena || "" }, reservaPoner);
+    if (hecho) reservaNumero.value = "";
+  });
+  reservaNumero.addEventListener("keydown", e => {
+    if (e.key === "Enter") reservaPoner.click();
+  });
+  reservasLista.addEventListener("click", e => {
+    const boton = e.target.closest("[data-quitar-reserva]");
+    if (!boton) return;
+    const oficial = boton.dataset.quitarReserva;
+    if (!confirm(`¿Ha vuelto la ${oficial}? Se quitará la reserva en toda la app.`)) return;
+    cambiarReserva({ accion:"quitar_reserva", oficial }, boton);
   });
 
   // ---- Borrar una semana publicada ----

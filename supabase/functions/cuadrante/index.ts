@@ -7,6 +7,8 @@
 // Al publicar se puede mandar también { equipo: [...] } con la lista de carretilleros.
 // POST -> { pin, accion: "codigo_guardar", codigo: { id?, faena, nombre, codigo } } guarda un código compartido.
 // POST -> { pin, accion: "codigo_borrar", id } borra un código compartido.
+// POST -> { pin, accion: "reserva", oficial, reserva, faena, avisar } pone una máquina de reserva.
+// POST -> { pin, accion: "quitar_reserva", oficial, avisar } vuelve la máquina oficial.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import * as webpush from "jsr:@negrel/webpush@0.5.0";
 
@@ -16,6 +18,7 @@ const MAX_SEMANAS = 12;
 const SUSCRIPCIONES = "suscripciones.json";
 const EQUIPO = "equipo.json";
 const CODIGOS = "codigos.json";
+const RESERVAS = "reservas.json";
 const MAX_CODIGOS = 3000;
 const MAX_SUSCRIPCIONES = 1000;
 // Quien falla la clave 10 veces en 15 minutos se queda bloqueado ese rato (por conexión).
@@ -56,6 +59,7 @@ async function sha256(texto: string) {
 type Semana = { anio: number; kw: number; publicado: string; datos: unknown };
 type Suscripcion = { endpoint: string; keys: { p256dh: string; auth: string } };
 type Codigo = { id: string; faena: string; nombre: string; codigo: string };
+type Reserva = { oficial: string; reserva: string; faena: string; desde: string };
 
 async function leerLista<T>(archivo: string): Promise<T[]> {
   const { data, error } = await supabase.storage.from(BUCKET).download(archivo);
@@ -142,7 +146,7 @@ function lunesDeSemana(anio: number, kw: number) {
 const fechaCorta = (d: Date) => `${d.getUTCDate()} ${MESES[d.getUTCMonth()]}`;
 
 // Envía el aviso a todos los suscritos y quita las suscripciones que ya no existen.
-async function avisarATodos(aviso: { title: string; body: string; url: string }) {
+async function avisarATodos(aviso: { title: string; body: string; url: string }, topic = "cuadrante") {
   const suscripciones = await leerLista<Suscripcion>(SUSCRIPCIONES);
   if (!suscripciones.length) return 0;
   const vapidKeys = await webpush.importVapidKeys(VAPID as unknown as webpush.ExportedVapidKeys);
@@ -154,7 +158,7 @@ async function avisarATodos(aviso: { title: string; body: string; url: string })
       await servidor.subscribe(s).pushTextMessage(JSON.stringify(aviso), {
         urgency: webpush.Urgency.High,
         ttl: 172800,
-        topic: "cuadrante",
+        topic,
       });
       enviados++;
     } catch (err) {
@@ -172,6 +176,7 @@ async function avisarATodos(aviso: { title: string; body: string; url: string })
 }
 
 const texto = (v: unknown, max: number) => String(v ?? "").trim().slice(0, max);
+const claveMaquina = (v: unknown) => String(v ?? "").normalize("NFD").replace(/[^a-z0-9]/gi, "").toLowerCase();
 
 // El código se guarda tal cual (con sus espacios); solo se admite lo que cabe en un Code 128.
 function limpiarCodigo(c: any): Codigo | null {
@@ -202,8 +207,13 @@ Deno.serve(async (req) => {
 
   try {
     if (req.method === "GET") {
-      const [semanas, equipo, codigos] = await Promise.all([leerSemanas(), leerLista<string>(EQUIPO), leerLista<Codigo>(CODIGOS)]);
-      return responder({ semanas, equipo, codigos });
+      const [semanas, equipo, codigos, reservas] = await Promise.all([
+        leerSemanas(),
+        leerLista<string>(EQUIPO),
+        leerLista<Codigo>(CODIGOS),
+        leerLista<Reserva>(RESERVAS),
+      ]);
+      return responder({ semanas, equipo, codigos, reservas });
     }
 
     if (req.method === "POST") {
@@ -238,6 +248,44 @@ Deno.serve(async (req) => {
       intentos.set(ip, enMemoria.filter((t) => t !== ahora));
 
       if (body.accion === "comprobar") return responder({ estado: "ok" });
+
+      // Máquina de reserva: se guarda por máquina oficial, así sigue a la máquina aunque cambie de faena.
+      if (body.accion === "reserva" || body.accion === "quitar_reserva") {
+        const oficial = texto(body.oficial, 60);
+        if (!oficial) return responder({ estado: "datos" }, 400);
+        const reservas = await leerLista<Reserva>(RESERVAS);
+        const anterior = reservas.find((r) => claveMaquina(r.oficial) === claveMaquina(oficial));
+        const lista = reservas.filter((r) => r !== anterior);
+        let aviso;
+        if (body.accion === "reserva") {
+          const reserva = texto(body.reserva, 60);
+          if (!reserva) return responder({ estado: "datos" }, 400);
+          const faena = texto(body.faena, 80);
+          lista.push({ oficial, reserva, faena, desde: new Date().toISOString() });
+          aviso = {
+            title: `Máquina de reserva${faena ? ` · ${faena}` : ""}`,
+            body: `La ${oficial} está fuera de servicio. Usa la reserva ${reserva}.`,
+            url: "./",
+          };
+        } else {
+          if (!anterior) return responder({ estado: "no_existe" }, 404);
+          aviso = {
+            title: `Vuelve la máquina oficial${anterior.faena ? ` · ${anterior.faena}` : ""}`,
+            body: `Ya está de vuelta la ${anterior.oficial}. Deja de usar la reserva ${anterior.reserva}.`,
+            url: "./",
+          };
+        }
+        await guardarLista(RESERVAS, lista.slice(-50));
+        let avisados = 0;
+        if (body.avisar) {
+          try {
+            avisados = await avisarATodos(aviso, "reserva");
+          } catch (err) {
+            console.error("no se pudieron enviar los avisos", err);
+          }
+        }
+        return responder({ estado: "ok", avisados, reservas: lista.slice(-50) });
+      }
 
       if (body.accion === "codigo_guardar" || body.accion === "codigo_borrar") {
         const codigos = await leerLista<Codigo>(CODIGOS);
