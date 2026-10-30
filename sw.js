@@ -1,4 +1,6 @@
-const CACHE_NAME = "carretillas-l1-v19";
+// Súbela en cada cambio: es la versión que se ve en el menú y la que hace que los móviles se actualicen.
+const VERSION = 20;
+const CACHE_NAME = `carretillas-l1-v${VERSION}`;
 // Va aparte (sin el prefijo de versión) para que no se borre al actualizar la app.
 const FOTOS_CACHE = "cl1-fotos-fichas";
 const APP_SHELL = [
@@ -36,6 +38,7 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("message", (event) => {
   if (event.data?.type === "SKIP_WAITING") self.skipWaiting();
+  if (event.data?.type === "VERSION") event.source?.postMessage({ type:"VERSION", version:VERSION });
 });
 
 // Con mala cobertura no se hace esperar: si la red tarda más de esto, se abre con la copia guardada.
