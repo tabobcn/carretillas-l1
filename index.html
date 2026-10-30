@@ -375,6 +375,17 @@
     padding:4px 10px calc(env(safe-area-inset-bottom) + 18px);
   }
   .page{ max-width:560px; margin:0 auto; }
+  /* En el ordenador, "Hacer cuadrante" usa toda la pantalla para ver la tabla entera. */
+  @media (min-width:1000px) and (hover:hover) and (pointer:fine){
+    #view-subir .page{ max-width:min(1400px, 100%); padding:0 12px; }
+    #view-subir .preview-table.editor{ table-layout:auto; }
+    #view-subir .preview-table.editor th:first-child,
+    #view-subir .preview-table.editor td:first-child{ position:static; max-width:none; min-width:150px; box-shadow:none; }
+    #view-subir .ed-persona{ width:100%; min-width:120px; font-size:.86rem; }
+    #view-subir .ed-texto{ width:100%; min-width:130px; font-size:.86rem; }
+    #view-subir .subir-opciones{ max-width:640px; }
+    #view-subir .reserva-form, #view-subir .clave-fila{ max-width:640px; }
+  }
   .page-empty{
     margin-top:24px;
     padding:28px 20px;
@@ -688,6 +699,85 @@
     letter-spacing:.2em;
   }
   .clave-fila .btn-primary{ width:auto; margin-top:0; padding:0 22px; }
+
+  .interruptor{
+    display:flex; align-items:center; gap:10px; margin:0 2px 10px; cursor:pointer;
+    font-size:.76rem; line-height:1.35; color:var(--text-dim);
+  }
+  .interruptor strong{ display:block; font-size:.86rem; color:var(--text); }
+  .interruptor input{ position:absolute; opacity:0; pointer-events:none; }
+  .interruptor-pista{
+    position:relative; flex:0 0 auto; width:44px; height:26px; border-radius:999px;
+    background:rgba(255,255,255,.14); transition:background-color .15s ease;
+  }
+  .interruptor-pista::after{
+    content:""; position:absolute; top:3px; left:3px; width:20px; height:20px; border-radius:50%;
+    background:#fff; transition:transform .15s ease;
+  }
+  .interruptor input:checked + .interruptor-pista{ background:var(--accent); }
+  .interruptor input:checked + .interruptor-pista::after{ transform:translateX(18px); }
+  .interruptor input:focus-visible + .interruptor-pista{ outline:3px solid var(--accent-2); outline-offset:2px; }
+  .reserva-form{ display:flex; gap:6px; margin-top:4px; }
+  .reserva-form select, .reserva-form input{
+    min-width:0; min-height:40px; padding:6px 10px;
+    border:1px solid rgba(255,140,26,.38); border-radius:10px;
+    background:#0f1216; color:var(--text); font:inherit; font-size:.86rem; font-weight:700;
+  }
+  .reserva-form select{ flex:1 1 55%; }
+  .reserva-form input{ flex:1 1 30%; text-transform:uppercase; }
+  .reserva-form .btn-mini{ margin-left:0; }
+  .check-avisar{ display:flex; align-items:center; gap:8px; margin:8px 2px 0; font-size:.8rem; color:var(--text-dim); }
+  .check-avisar input{ width:18px; height:18px; accent-color:var(--accent); }
+
+  .ficha-maquina{
+    display:flex; flex-wrap:wrap; align-items:baseline; gap:4px 8px; margin:0 2px 12px;
+    font-size:.86rem;
+  }
+  .ficha-maquina span{ color:var(--text-dim); font-weight:700; }
+  .ficha-maquina strong{ font-weight:800; }
+  .ficha-maquina small{ flex-basis:100%; color:var(--text-dim); }
+  .ficha-fotos{ display:grid; gap:8px; margin-bottom:12px; }
+  .ficha-foto{
+    display:block; width:100%; padding:0; border:1px solid var(--border); border-radius:14px;
+    overflow:hidden; background:#0f1216; cursor:zoom-in;
+  }
+  .ficha-foto img{ display:block; width:100%; height:auto; max-height:70vh; object-fit:contain; }
+  .ficha-foto:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; }
+  .ficha-texto{
+    padding:12px 14px; margin-bottom:10px; border:1px solid var(--border); border-radius:12px;
+    background:linear-gradient(155deg, var(--surface-2), var(--surface));
+    font-size:.95rem; line-height:1.55; word-break:break-word;
+  }
+  .ficha-form .field small{ font-weight:600; }
+  .ficha-form textarea{
+    min-height:160px; padding:10px 12px; border:1px solid rgba(255,140,26,.38); border-radius:10px;
+    background:#0f1216; color:var(--text); font:inherit; font-size:.95rem; line-height:1.45; resize:vertical;
+  }
+  .ficha-miniaturas{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px; margin:8px 0 4px; }
+  .ficha-mini, .ficha-anadir{ position:relative; aspect-ratio:1; border-radius:10px; overflow:hidden; }
+  .ficha-mini img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .ficha-mini button{
+    position:absolute; top:4px; right:4px; width:30px; height:30px; border:0; border-radius:50%;
+    background:rgba(0,0,0,.7); color:#fff; font:inherit; cursor:pointer;
+  }
+  .ficha-anadir{
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;
+    border:1.5px dashed rgba(255,140,26,.5); background:rgba(255,140,26,.08); color:var(--accent-2);
+    font-size:1.4rem; cursor:pointer;
+  }
+  .ficha-anadir span{ font-size:.72rem; font-weight:800; }
+  .ficha-anadir input{ position:absolute; inset:0; opacity:0; cursor:pointer; }
+  .ficha-anadir:focus-within{ outline:3px solid var(--accent-2); outline-offset:2px; }
+  .visor{
+    position:fixed; inset:0; z-index:200; display:flex; align-items:center; justify-content:center;
+    background:rgba(0,0,0,.92); overflow:auto; touch-action:pinch-zoom;
+  }
+  .visor img{ max-width:100%; max-height:100%; object-fit:contain; }
+  .visor-cerrar{
+    position:fixed; top:calc(env(safe-area-inset-top) + 10px); right:12px; z-index:1;
+    width:44px; height:44px; border:0; border-radius:50%; background:rgba(255,255,255,.15);
+    color:#fff; font:inherit; font-size:1.1rem; cursor:pointer;
+  }
 
   .equipo-box{
     margin:0 0 8px;
@@ -1067,6 +1157,17 @@
     font-size:1.62rem; font-weight:800; line-height:1.1; word-break:break-word;
     user-select:text; -webkit-user-select:text;
   }
+  .card-back-tachada{
+    font-size:.86rem; font-weight:800; opacity:.7;
+    text-decoration:line-through; text-decoration-thickness:2px;
+  }
+  .card-reserva{
+    display:inline-block; margin-top:3px; padding:1px 6px; border-radius:6px;
+    background:rgba(255,204,128,.16); color:#ffcc80; font-size:.66rem; font-weight:800;
+  }
+  .maq-oficial{ opacity:.65; text-decoration-thickness:2px; }
+  .maq-reserva{ display:block; margin-top:1px; font-weight:800; color:#ffcc80; }
+  .pr-table .maq-reserva, .pr-bn .maq-reserva{ color:inherit; }
   .card-back-sub{
     font-size:.92rem; font-weight:700; opacity:.9; line-height:1.18; word-break:break-word;
     margin-top:3px;
@@ -1185,6 +1286,11 @@
         <span class="field-note" id="subir-fechas"></span>
         <button class="btn-mini" id="subir-vaciar" type="button">Quitar nombres</button>
       </div>
+      <label class="interruptor">
+        <input type="checkbox" id="copiar-semana" checked>
+        <span class="interruptor-pista" aria-hidden="true"></span>
+        <span><strong>Copiar a toda la semana</strong> Al elegir a alguien se rellenan también los días siguientes. Apágalo para cambiar solo una casilla.</span>
+      </label>
       <details class="equipo-box">
         <summary>👥 Equipo (<span id="equipo-total">0</span>) · añadir o quitar personas</summary>
         <div class="equipo-chips" id="equipo-chips"></div>
@@ -1199,6 +1305,17 @@
     </div>
     <button class="btn-primary" id="subir-publicar" type="button" hidden>Publicar</button>
 
+    <h3 class="page-subtitle">🔧 Máquinas de reserva</h3>
+    <p class="page-hint">Si se estropea una máquina y traen otra de reserva, apúntalo aquí. En toda la app saldrá la oficial tachada y debajo la de reserva. Cuando vuelva la oficial, quita la reserva.</p>
+    <div id="reservas-lista"></div>
+    <div class="reserva-form">
+      <select id="reserva-oficial" aria-label="Máquina estropeada"></select>
+      <input id="reserva-numero" type="text" placeholder="Nº reserva" autocomplete="off" enterkeyhint="done" aria-label="Número de la máquina de reserva">
+      <button class="btn-mini" id="reserva-poner" type="button">Poner</button>
+    </div>
+    <label class="check-avisar"><input type="checkbox" id="reserva-avisar" checked> Avisar a todos con una notificación</label>
+    <div class="msg" id="reservas-msg" role="status" aria-live="polite"></div>
+
     <h3 class="page-subtitle">Semanas publicadas</h3>
     <p class="page-hint">Si una semana se subió mal, bórrala y vuelve a subirla. Para corregir datos basta con publicar otra vez la misma semana.</p>
     <div id="subir-semanas"></div>
@@ -1211,13 +1328,14 @@
   <div class="page" id="qr"></div>
 </section>
 
-<section class="empty-view" id="view-claves" hidden>
-  <div class="empty-box">
-    <div class="empty-emoji" aria-hidden="true">🚧</div>
-    <div class="empty-title">Próximamente</div>
-    <p>El apartado QR está en obras.</p>
-  </div>
+<section class="page-view" id="view-fichas" hidden>
+  <div class="page" id="fichas"></div>
 </section>
+
+<div class="visor" id="visor" hidden>
+  <button class="visor-cerrar" id="visor-cerrar" type="button" aria-label="Cerrar foto">✕</button>
+  <img id="visor-img" alt="">
+</div>
 
 <div class="search-backdrop" id="search-backdrop" hidden></div>
 <section class="search-panel" id="search-panel" role="search" hidden>
@@ -1246,9 +1364,9 @@
     <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19"><path d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 14h3v3h-3zM17 17h3v3h-3z" fill="currentColor"/></svg>
     Claves
   </button>
-  <button class="drawer-item" type="button" data-view="claves">
-    <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19"><circle cx="8" cy="12" r="3.6" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M11.6 12H20.2M17.4 12v3.2M20.2 12v2.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-    QR
+  <button class="drawer-item" type="button" data-view="fichas">
+    <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19"><path d="M6.5 3.5h8l3.5 3.5v13.5H6.5z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M14.5 3.5V7H18M9 11.5h6M9 15h6M9 18h3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    Fichas de faena
   </button>
   <div class="drawer-sep" role="presentation"></div>
   <button class="drawer-item" type="button" data-view="subir">
@@ -1297,6 +1415,24 @@
   ];
   let FAENAS = FAENAS_BASE;
 
+  // Máquinas de reserva activas: [{ oficial, reserva, faena, desde }]. Van por máquina oficial,
+  // así la reserva sigue a la máquina aunque cambie de faena en otra semana.
+  let RESERVAS = (() => {
+    try { return JSON.parse(localStorage.getItem("cl1-reservas")) || []; } catch { return []; }
+  })();
+  function claveMaquina(m){ return String(m || "").normalize("NFD").replace(/[^a-z0-9]/gi, "").toLowerCase(); }
+  function reservaDe(tractora){
+    const clave = claveMaquina(tractora);
+    return clave ? RESERVAS.find(r => claveMaquina(r.oficial) === clave) || null : null;
+  }
+  // La oficial tachada y debajo la de reserva.
+  function htmlMaquina(tractora){
+    const r = reservaDe(tractora);
+    return r
+      ? `<s class="maq-oficial">${escapeHtml(tractora)}</s><span class="maq-reserva">Reserva: ${escapeHtml(r.reserva)}</span>`
+      : escapeHtml(tractora);
+  }
+
   function escapeHtml(str){
     return String(str).replace(/[&<>"']/g, c => ({
       "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;"
@@ -1305,7 +1441,7 @@
 
   function render(){
     const list = document.getElementById("list");
-    list.innerHTML = FAENAS.map((f, i) => `
+    list.innerHTML = FAENAS.map((f, i) => { const r = reservaDe(f.tractora); return `
       <button class="card" type="button" data-code="${escapeHtml(f.codigo)}" aria-pressed="false" aria-label="${escapeHtml(f.codigo)}: mostrar máquina">
         <div class="card-inner">
           <div class="card-face card-front">
@@ -1313,18 +1449,20 @@
             <div class="card-main">
               <div class="card-code">${escapeHtml(f.codigo)}</div>
               ${f.nota ? `<div class="card-note">${escapeHtml(f.nota)}</div>` : ""}
+              ${r ? `<div class="card-reserva">🔧 Reserva</div>` : ""}
             </div>
             <svg class="card-chev" aria-hidden="true" viewBox="0 0 24 24" width="13" height="13"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div class="card-face card-back">
             <div class="stripe"></div>
-            <div class="card-back-label">Máquina</div>
-            <div class="card-back-main">${escapeHtml(f.tractora)}</div>
+            <div class="card-back-label" data-base="${r ? "Máquina de reserva" : "Máquina"}">${r ? "Máquina de reserva" : "Máquina"}</div>
+            ${r ? `<div class="card-back-tachada">${escapeHtml(f.tractora)}</div>` : ""}
+            <div class="card-back-main">${escapeHtml(r ? r.reserva : f.tractora)}</div>
             <div class="card-back-sub">${escapeHtml(f.id)}</div>
           </div>
         </div>
       </button>
-    `).join("");
+    `; }).join("");
   }
 
   let openCard = null;
@@ -1359,14 +1497,14 @@
     inicio: document.getElementById("list"),
     cuadrante: document.getElementById("view-cuadrante"),
     qr: document.getElementById("view-qr"),
-    claves: document.getElementById("view-claves"),
+    fichas: document.getElementById("view-fichas"),
     subir: document.getElementById("view-subir")
   };
   const viewSubtitles = {
     inicio: "Toca tu faena para ver la máquina",
     cuadrante: "Cuadrante semanal",
     qr: "Códigos de barras",
-    claves: "Apartado QR",
+    fichas: "Fichas de faena",
     subir: "Hacer cuadrante"
   };
   const brandSub = document.querySelector(".brand-sub");
@@ -1392,6 +1530,12 @@
     brandLogo.closest(".topbar").classList.toggle("compact", name !== "inicio");
     searchButton.hidden = name !== "inicio";
     renderHoy();
+    if (name === "fichas") {
+      fichaAbierta = null;
+      fichaEditando = false;
+      renderFichas();
+      cargarSemanas();
+    }
     if (name === "qr") {
       qrFaena = null;
       qrEditando = null;
@@ -1402,6 +1546,7 @@
       if (name === "cuadrante") renderCuadrante();
       else {
         renderPublicadas();
+        renderReservas();
         mostrarSubir();
       }
       cargarSemanas();
@@ -1436,7 +1581,7 @@
     }
     const matches = FAENAS
       .map((f, i) => ({ f, i }))
-      .filter(({ f }) => normalize(f.tractora).includes(query) || normalize(f.id).includes(query));
+      .filter(({ f }) => [f.tractora, f.id, reservaDe(f.tractora)?.reserva].some(t => t && normalize(t).includes(query)));
     if (!matches.length){
       searchResults.innerHTML = `<div class="search-hint">Ninguna máquina coincide con «${escapeHtml(searchInput.value.trim())}»</div>`;
       return;
@@ -1444,7 +1589,7 @@
     searchResults.innerHTML = matches.map(({ f, i }) => `
       <button class="search-result" type="button" data-index="${i}" aria-label="${escapeHtml(f.tractora)}: faena ${escapeHtml(f.codigo)}">
         <span class="search-result-machine">
-          <span class="search-result-name">${escapeHtml(f.tractora)}</span>
+          <span class="search-result-name">${htmlMaquina(f.tractora)}</span>
           <span class="search-result-id">${escapeHtml(f.id)}</span>
         </span>
         <span class="search-result-arrow" aria-hidden="true">→</span>
@@ -1586,8 +1731,12 @@
     render();
     renderHoy();
     if (!appViews.cuadrante.hidden) renderCuadrante();
-    if (!appViews.subir.hidden) renderPublicadas();
+    if (!appViews.subir.hidden){
+      renderPublicadas();
+      renderReservas();
+    }
     if (!appViews.qr.hidden && qrFaena === null) renderQrFaenas();
+    if (!appViews.fichas.hidden && !fichaEditando) renderFichas();
   }
 
   // Al abrir la app, tu tarjeta de hoy se da la vuelta sola hasta que la cierres tú.
@@ -1596,7 +1745,8 @@
   function renderHoy(){
     document.querySelectorAll("#list .card.mine").forEach(c => {
       c.classList.remove("mine");
-      c.querySelector(".card-back-label").textContent = "Máquina";
+      const etiqueta = c.querySelector(".card-back-label");
+      etiqueta.textContent = etiqueta.dataset.base;
     });
     const activa = semanaActual();
     const col = columnaDeHoy(activa);
@@ -1613,13 +1763,13 @@
       hoyBanner.innerHTML = `
         <span class="hoy-text">
           <span class="hoy-label">Hoy · ${escapeHtml(dia)} · ${escapeHtml(yo)}</span>
-          <span class="hoy-main">${escapeHtml(f.codigo)} → ${escapeHtml(f.tractora || "sin máquina")}</span>
+          <span class="hoy-main">${escapeHtml(f.codigo)} → ${escapeHtml(reservaDe(f.tractora) ? `${reservaDe(f.tractora).reserva} (reserva)` : f.tractora || "sin máquina")}</span>
         </span>
         <svg class="hoy-arrow" aria-hidden="true" viewBox="0 0 24 24" width="16" height="16"><path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
       const card = document.querySelectorAll("#list .card")[i];
       if (card){
         card.classList.add("mine");
-        card.querySelector(".card-back-label").textContent = "Tu máquina hoy";
+        card.querySelector(".card-back-label").textContent = reservaDe(f.tractora) ? "Tu máquina hoy · reserva" : "Tu máquina hoy";
         if (!miTarjetaCerrada && !card.classList.contains("flipped")) toggleCard(card);
       }
     }
@@ -1697,7 +1847,7 @@
       return `<div class="cuad-row ${yo && mismaPersona(persona, yo) ? "mine" : ""}">
         <div class="cuad-faena">${escapeHtml(f.codigo)}${f.nota ? `<small>${escapeHtml(f.nota)}</small>` : ""}</div>
         <div class="cuad-persona ${persona ? "" : "vacia"}">${persona ? escapeHtml(persona) : "—"}</div>
-        <div class="cuad-maquina">${escapeHtml(f.tractora)}${f.id ? `<small>${escapeHtml(f.id)}</small>` : ""}</div>
+        <div class="cuad-maquina">${htmlMaquina(f.tractora)}${f.id ? `<small>${escapeHtml(f.id)}</small>` : ""}</div>
       </div>`;
     }).join("");
 
@@ -1766,7 +1916,7 @@
               const cambia = c > 0 && !mismaPersona(p, f.personas[c - 1]) && p;
               return `<td class="${c === 0 || cambia ? "pr-cambio" : ""}">${escapeHtml(p || "—")}</td>`;
             }).join("")}
-            <td class="pr-maq">${escapeHtml(f.tractora)}</td>
+            <td class="pr-maq">${htmlMaquina(f.tractora)}</td>
             <td class="pr-id">${escapeHtml(f.id)}</td>
           </tr>`).join("")}
         </tbody>
@@ -1826,8 +1976,13 @@
           refrescarQr();
         }
       }
+      if (Array.isArray(respuesta.fichas)) aplicarFichas(respuesta.fichas);
+      const reservasCambiadas = Array.isArray(respuesta.reservas) && aplicarReservas(respuesta.reservas);
       const nuevas = prepararSemanas(respuesta.semanas);
-      if (JSON.stringify(nuevas) === JSON.stringify(semanas)) return;
+      if (JSON.stringify(nuevas) === JSON.stringify(semanas)){
+        if (reservasCambiadas) aplicarSemana();
+        return;
+      }
       semanas = nuevas;
       guardarLocal("cl1-semanas", semanas);
       aplicarSemana();
@@ -2082,6 +2237,10 @@
     guardarBorrador();
   }
 
+  const copiarSemana = document.getElementById("copiar-semana");
+  copiarSemana.checked = leerLocal("cl1-copiar-semana", true);
+  copiarSemana.addEventListener("change", () => guardarLocal("cl1-copiar-semana", copiarSemana.checked));
+
   subirTabla.addEventListener("change", e => {
     const campo = e.target.closest(".ed-texto");
     if (campo){
@@ -2095,12 +2254,12 @@
     const dia = Number(sel.dataset.dia);
     let nuevo = sel.value;
     if (nuevo === "__otro") nuevo = anadirAlEquipo(prompt("Nombre del carretillero:"));
-    // Al elegir un nombre, los días siguientes que tenían lo mismo (o nada) pasan a tenerlo también,
-    // salvo que ese día ya esté en otra faena.
+    // Con "Copiar a toda la semana", los días siguientes que tenían lo mismo (o nada) pasan a tenerlo
+    // también, salvo que ese día ya esté en otra faena. Apagado, solo cambia esta casilla.
     const anterior = fila.personas[dia] || "";
     const ocupadoEn = d => nuevo && leido.filas.some(f => f !== fila && mismaPersona(f.personas[d], nuevo));
     fila.personas[dia] = nuevo;
-    for (let d = dia + 1; d < fila.personas.length; d++){
+    for (let d = dia + 1; copiarSemana.checked && d < fila.personas.length; d++){
       const p = fila.personas[d] || "";
       if ((p !== anterior && p !== "") || ocupadoEn(d)) break;
       fila.personas[d] = nuevo;
@@ -2294,6 +2453,97 @@
       subirPublicar.disabled = false;
       subirPublicar.textContent = "Publicar";
     }
+  });
+
+  // ---- Máquinas de reserva ----
+  const reservasLista = document.getElementById("reservas-lista");
+  const reservaOficial = document.getElementById("reserva-oficial");
+  const reservaNumero = document.getElementById("reserva-numero");
+  const reservaPoner = document.getElementById("reserva-poner");
+  const reservaAvisar = document.getElementById("reserva-avisar");
+  const reservasMsg = document.getElementById("reservas-msg");
+
+  // Devuelve true si han cambiado.
+  function aplicarReservas(lista){
+    const limpias = lista
+      .filter(r => r && r.oficial && r.reserva)
+      .map(r => ({ oficial:String(r.oficial), reserva:String(r.reserva), faena:String(r.faena || ""), desde:String(r.desde || "") }));
+    if (JSON.stringify(limpias) === JSON.stringify(RESERVAS)) return false;
+    RESERVAS = limpias;
+    guardarLocal("cl1-reservas", RESERVAS);
+    return true;
+  }
+
+  function mensajeReservas(texto, tipo = ""){
+    reservasMsg.textContent = texto;
+    reservasMsg.className = `msg ${tipo}`;
+  }
+
+  function renderReservas(){
+    reservasLista.innerHTML = RESERVAS.map(r => {
+      const desde = r.desde ? new Date(r.desde) : null;
+      return `<div class="publicada">
+        <span class="publicada-text">
+          <span class="publicada-kw">${escapeHtml(r.faena || "Máquina")}</span>
+          <span class="publicada-sub"><s>${escapeHtml(r.oficial)}</s> → reserva <strong>${escapeHtml(r.reserva)}</strong>${desde && !isNaN(desde) ? ` · desde el ${desde.toLocaleDateString("es-ES", { day:"numeric", month:"short" })}` : ""}</span>
+        </span>
+        <button class="btn-borrar" type="button" data-quitar-reserva="${escapeHtml(r.oficial)}">Quitar</button>
+      </div>`;
+    }).join("") || `<p class="page-hint">Ahora mismo no hay ninguna máquina de reserva.</p>`;
+
+    const libres = FAENAS.filter(f => f.tractora && !reservaDe(f.tractora));
+    reservaOficial.innerHTML = `<option value="">Máquina estropeada…</option>` +
+      libres.map(f => `<option value="${escapeHtml(f.tractora)}" data-faena="${escapeHtml(f.codigo)}">${escapeHtml(f.codigo)} · ${escapeHtml(f.tractora)}</option>`).join("");
+  }
+
+  async function cambiarReserva(datos, boton){
+    boton.disabled = true;
+    mensajeReservas("Guardando…");
+    try {
+      const res = await fetch(CUADRANTE_URL, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json", apikey:SUPABASE_KEY },
+        body:JSON.stringify({ pin:claveSesion, avisar:reservaAvisar.checked, ...datos })
+      });
+      const r = await res.json().catch(() => ({}));
+      if (r.estado === "pin") return claveCaducada();
+      if (r.estado === "bloqueado") return mensajeReservas(MSG_BLOQUEADO, "error");
+      if (r.estado !== "ok" && r.estado !== "no_existe") throw new Error(r.estado || `HTTP ${res.status}`);
+      if (Array.isArray(r.reservas)) aplicarReservas(r.reservas);
+      aplicarSemana();
+      const avisos = r.avisados ? ` Avisados ${r.avisados} ${r.avisados === 1 ? "móvil" : "móviles"}.` : "";
+      mensajeReservas(datos.accion === "reserva"
+        ? `✅ Puesta la reserva ${datos.reserva} en lugar de la ${datos.oficial}.${avisos}`
+        : `✅ Vuelve la ${datos.oficial}.${avisos}`, "ok");
+      return true;
+    } catch (err) {
+      console.error(err);
+      mensajeReservas("No se pudo guardar. Comprueba la conexión e inténtalo otra vez.", "error");
+    } finally {
+      boton.disabled = false;
+    }
+  }
+
+  reservaPoner.addEventListener("click", async () => {
+    const opcion = reservaOficial.selectedOptions[0];
+    const reserva = reservaNumero.value.trim().toUpperCase();
+    if (!reservaOficial.value) return mensajeReservas("Elige la máquina que se ha estropeado.", "error");
+    if (!reserva) {
+      reservaNumero.focus();
+      return mensajeReservas("Escribe el número de la máquina de reserva.", "error");
+    }
+    const hecho = await cambiarReserva({ accion:"reserva", oficial:reservaOficial.value, reserva, faena:opcion.dataset.faena || "" }, reservaPoner);
+    if (hecho) reservaNumero.value = "";
+  });
+  reservaNumero.addEventListener("keydown", e => {
+    if (e.key === "Enter") reservaPoner.click();
+  });
+  reservasLista.addEventListener("click", e => {
+    const boton = e.target.closest("[data-quitar-reserva]");
+    if (!boton) return;
+    const oficial = boton.dataset.quitarReserva;
+    if (!confirm(`¿Ha vuelto la ${oficial}? Se quitará la reserva en toda la app.`)) return;
+    cambiarReserva({ accion:"quitar_reserva", oficial }, boton);
   });
 
   // ---- Borrar una semana publicada ----
@@ -2740,6 +2990,240 @@
     if (e.key === "Enter" && ["qr-nombre", "qr-codigo", "qr-clave"].includes(e.target.id)){
       e.preventDefault();
       guardarQr();
+    }
+  });
+
+  // ---- Fichas de faena: fotos (plano, materiales, zona de reparto…) y descripción ----
+  const fichasBox = document.getElementById("fichas");
+  const visor = document.getElementById("visor");
+  const visorImg = document.getElementById("visor-img");
+  let fichas = leerLocal("cl1-fichas", []);
+  let fichaAbierta = null;   // código de la faena abierta
+  let fichaEditando = false;
+  let fichaMantener = [];    // fotos ya guardadas que se quedan
+  let fichaNuevas = [];      // fotos nuevas (data URL JPEG)
+  let fichaGuardando = false;
+
+  const fichaDe = codigo => fichas.find(f => claveMaquina(f.faena) === claveMaquina(codigo)) || null;
+  const textoConSaltos = t => escapeHtml(t).replace(/\n/g, "<br>");
+
+  function aplicarFichas(lista){
+    const limpias = lista.filter(f => f && f.faena).map(f => ({
+      faena:String(f.faena),
+      descripcion:String(f.descripcion || ""),
+      fotos:(Array.isArray(f.fotos) ? f.fotos : []).filter(x => x && x.url && x.path).map(x => ({ path:String(x.path), url:String(x.url) })),
+      actualizado:String(f.actualizado || "")
+    }));
+    if (JSON.stringify(limpias) === JSON.stringify(fichas)) return;
+    fichas = limpias;
+    guardarLocal("cl1-fichas", fichas);
+    if (!appViews.fichas.hidden && !fichaEditando) renderFichas();
+  }
+
+  function renderFichas(){
+    if (fichaAbierta === null){
+      fichasBox.innerHTML = `
+        <p class="page-hint">Toca una faena para ver su ficha: plano, materiales, dónde reparte…</p>
+        <div class="qr-grid">
+          ${FAENAS.map(f => {
+            const ficha = fichaDe(f.codigo);
+            return `<button class="qr-faena ${ficha ? "con" : ""}" type="button" data-ficha="${escapeHtml(f.codigo)}">
+              <span class="qr-faena-code">${escapeHtml(f.codigo)}</span>
+              <span class="qr-faena-n">${ficha ? `📄 Con ficha${ficha.fotos.length ? ` · ${ficha.fotos.length} ${ficha.fotos.length === 1 ? "foto" : "fotos"}` : ""}` : "Sin ficha todavía"}</span>
+            </button>`;
+          }).join("")}
+        </div>`;
+      return;
+    }
+
+    const faena = FAENAS.find(f => mismaPersona(f.codigo, fichaAbierta)) || { codigo:fichaAbierta, nota:"", tractora:"", id:"" };
+    const ficha = fichaDe(fichaAbierta);
+    const nCodigos = typeof codigosDe === "function" ? codigosDe(faena.codigo).length : 0;
+    const cabecera = `
+      <div class="qr-head">
+        <button class="btn-mini" type="button" data-fichas-volver>← Faenas</button>
+        <h2 class="qr-title">${escapeHtml(faena.codigo)}</h2>
+      </div>
+      ${faena.nota ? `<p class="page-hint">${escapeHtml(faena.nota)}</p>` : ""}
+      ${faena.tractora ? `<div class="ficha-maquina"><span>Máquina</span><strong>${htmlMaquina(faena.tractora)}</strong>${faena.id ? `<small>${escapeHtml(faena.id)}</small>` : ""}</div>` : ""}`;
+
+    if (fichaEditando){
+      fichasBox.innerHTML = `${cabecera}
+        <div class="ficha-form">
+          <div class="field">Fotos <small>(plano, materiales, zona de reparto… hasta 6)</small></div>
+          <div class="ficha-miniaturas">
+            ${fichaMantener.map(f => `<span class="ficha-mini"><img src="${escapeHtml(f.url)}" alt=""><button type="button" data-quitar-guardada="${escapeHtml(f.path)}" aria-label="Quitar foto">✕</button></span>`).join("")}
+            ${fichaNuevas.map((url, i) => `<span class="ficha-mini"><img src="${url}" alt=""><button type="button" data-quitar-nueva="${i}" aria-label="Quitar foto">✕</button></span>`).join("")}
+            ${fichaMantener.length + fichaNuevas.length < 6 ? `<label class="ficha-anadir">📷<span>Añadir foto</span><input type="file" id="ficha-fotos" accept="image/*" multiple></label>` : ""}
+          </div>
+          <label class="field">Descripción
+            <textarea id="ficha-texto" rows="8" maxlength="4000" placeholder="Qué materiales lleva, dónde reparte, ruta, cosas a tener en cuenta…">${escapeHtml(ficha?.descripcion || "")}</textarea>
+          </label>
+          ${claveSesion ? "" : `<label class="field">Clave<input id="ficha-clave" type="password" inputmode="numeric" autocomplete="off"></label>`}
+          <div class="msg" id="ficha-msg" role="status" aria-live="polite"></div>
+          <div class="qr-form-botones">
+            <button class="btn-mini" type="button" data-ficha-cancelar>Cancelar</button>
+            <button class="btn-primary" type="button" data-ficha-guardar ${fichaGuardando ? "disabled" : ""}>${fichaGuardando ? "Guardando…" : "Guardar"}</button>
+          </div>
+        </div>`;
+      return;
+    }
+
+    fichasBox.innerHTML = `${cabecera}
+      ${ficha?.fotos.length ? `<div class="ficha-fotos">${ficha.fotos.map((f, i) => `
+        <button class="ficha-foto" type="button" data-ver-foto="${escapeHtml(f.url)}" aria-label="Ver foto ${i + 1} en grande">
+          <img src="${escapeHtml(f.url)}" alt="Foto ${i + 1} de ${escapeHtml(faena.codigo)}" loading="lazy">
+        </button>`).join("")}</div>` : ""}
+      ${ficha?.descripcion ? `<div class="ficha-texto">${textoConSaltos(ficha.descripcion)}</div>` : ""}
+      ${ficha ? "" : `<div class="page-empty"><strong>Todavía no hay ficha</strong>Cuando se añada, aquí saldrán las fotos y la descripción de esta faena.</div>`}
+      ${ficha?.actualizado ? `<div class="cuad-foot">Actualizada el ${new Date(ficha.actualizado).toLocaleDateString("es-ES")}</div>` : ""}
+      ${nCodigos ? `<button class="btn-imprimir" type="button" data-ficha-codigos>🏷️ Claves de esta faena (${nCodigos})</button>` : ""}
+      <button class="btn-imprimir" type="button" data-ficha-editar>✏️ ${ficha ? "Editar ficha" : "Crear ficha"}<small>pide la clave de Hacer cuadrante</small></button>`;
+  }
+
+  function abrirVisor(url){
+    visorImg.src = url;
+    visor.hidden = false;
+  }
+  function cerrarVisor(){
+    visor.hidden = true;
+    visorImg.removeAttribute("src");
+  }
+  document.getElementById("visor-cerrar").addEventListener("click", cerrarVisor);
+  visor.addEventListener("click", e => { if (e.target === visor) cerrarVisor(); });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !visor.hidden) cerrarVisor(); });
+
+  // Reduce la foto en el móvil (lado mayor 1600 px, JPEG) para que suba rápido y pese poco.
+  function reducirFoto(archivo){
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(archivo);
+      const img = new Image();
+      img.onload = () => {
+        const escala = Math.min(1, 1600 / Math.max(img.naturalWidth, img.naturalHeight));
+        const lienzo = document.createElement("canvas");
+        lienzo.width = Math.round(img.naturalWidth * escala);
+        lienzo.height = Math.round(img.naturalHeight * escala);
+        lienzo.getContext("2d").drawImage(img, 0, 0, lienzo.width, lienzo.height);
+        URL.revokeObjectURL(url);
+        resolve(lienzo.toDataURL("image/jpeg", 0.82));
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("No se pudo leer la foto."));
+      };
+      img.src = url;
+    });
+  }
+
+  function mensajeFicha(texto, tipo = ""){
+    const el = document.getElementById("ficha-msg");
+    if (!el) return;
+    el.textContent = texto;
+    el.className = `msg ${tipo}`;
+  }
+
+  // Al repintar el formulario se conserva lo escrito.
+  function textoEnEdicion(){
+    return document.getElementById("ficha-texto")?.value;
+  }
+  function repintarFormulario(){
+    const texto = textoEnEdicion();
+    renderFichas();
+    if (texto !== undefined) document.getElementById("ficha-texto").value = texto;
+  }
+
+  async function guardarFicha(){
+    const descripcion = textoEnEdicion() || "";
+    const pin = claveSesion || document.getElementById("ficha-clave")?.value.trim() || "";
+    if (!pin) return mensajeFicha("Escribe la clave para guardar.", "error");
+    fichaGuardando = true;
+    repintarFormulario();
+    try {
+      const res = await fetch(CUADRANTE_URL, {
+        method:"POST",
+        headers:{ "Content-Type":"application/json", apikey:SUPABASE_KEY },
+        body:JSON.stringify({ pin, accion:"ficha_guardar", faena:fichaAbierta, descripcion, mantener:fichaMantener.map(f => f.path), nuevas:fichaNuevas })
+      });
+      const r = await res.json().catch(() => ({}));
+      fichaGuardando = false;
+      if (r.estado === "pin"){
+        if (claveSesion) claveCaducada();
+        repintarFormulario();
+        return mensajeFicha("Clave incorrecta.", "error");
+      }
+      if (r.estado === "bloqueado"){
+        repintarFormulario();
+        return mensajeFicha(MSG_BLOQUEADO, "error");
+      }
+      if (r.estado !== "ok") throw new Error(r.estado || `HTTP ${res.status}`);
+      if (!claveSesion) guardarClave(pin);
+      fichaEditando = false;
+      fichaNuevas = [];
+      aplicarFichas(r.fichas || []);
+      renderFichas();
+    } catch (err) {
+      console.error(err);
+      fichaGuardando = false;
+      repintarFormulario();
+      mensajeFicha("No se pudo guardar. Comprueba la conexión e inténtalo otra vez.", "error");
+    }
+  }
+
+  fichasBox.addEventListener("click", e => {
+    const t = e.target;
+    const abrir = t.closest("[data-ficha]");
+    if (abrir){
+      fichaAbierta = abrir.dataset.ficha;
+      renderFichas();
+      return window.scrollTo?.(0, 0);
+    }
+    if (t.closest("[data-fichas-volver]")){
+      fichaAbierta = null;
+      fichaEditando = false;
+      return renderFichas();
+    }
+    const foto = t.closest("[data-ver-foto]");
+    if (foto) return abrirVisor(foto.dataset.verFoto);
+    if (t.closest("[data-ficha-codigos]")){
+      const faena = fichaAbierta;
+      showAppView("qr");
+      qrFaena = faena;
+      return renderQr();
+    }
+    if (t.closest("[data-ficha-editar]")){
+      fichaEditando = true;
+      fichaMantener = [...(fichaDe(fichaAbierta)?.fotos || [])];
+      fichaNuevas = [];
+      renderFichas();
+      return document.getElementById("ficha-texto").focus();
+    }
+    if (t.closest("[data-ficha-cancelar]")){
+      fichaEditando = false;
+      fichaNuevas = [];
+      return renderFichas();
+    }
+    if (t.closest("[data-ficha-guardar]")) return guardarFicha();
+    const guardada = t.closest("[data-quitar-guardada]");
+    if (guardada){
+      fichaMantener = fichaMantener.filter(f => f.path !== guardada.dataset.quitarGuardada);
+      return repintarFormulario();
+    }
+    const nueva = t.closest("[data-quitar-nueva]");
+    if (nueva){
+      fichaNuevas.splice(Number(nueva.dataset.quitarNueva), 1);
+      return repintarFormulario();
+    }
+  });
+
+  fichasBox.addEventListener("change", async e => {
+    if (e.target.id !== "ficha-fotos") return;
+    const hueco = 6 - fichaMantener.length - fichaNuevas.length;
+    const archivos = [...e.target.files].slice(0, hueco);
+    try {
+      for (const archivo of archivos) fichaNuevas.push(await reducirFoto(archivo));
+      repintarFormulario();
+    } catch (err) {
+      mensajeFicha(err.message, "error");
     }
   });
 
