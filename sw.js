@@ -1,4 +1,6 @@
-const CACHE_NAME = "carretillas-l1-v17";
+const CACHE_NAME = "carretillas-l1-v19";
+// Va aparte (sin el prefijo de versión) para que no se borre al actualizar la app.
+const FOTOS_CACHE = "cl1-fotos-fichas";
 const APP_SHELL = [
   "./",
   "index.html",
@@ -44,6 +46,21 @@ self.addEventListener("fetch", (event) => {
   if (request.method !== "GET") return;
 
   const url = new URL(request.url);
+
+  // Fotos de las fichas de faena (Supabase): nunca cambian, así que se guardan la primera vez
+  // y después se sirven de la copia, aunque no haya cobertura.
+  if (url.hostname.endsWith(".supabase.co") && url.pathname.startsWith("/storage/v1/object/public/fichas/")) {
+    event.respondWith((async () => {
+      const cache = await caches.open(FOTOS_CACHE);
+      const copia = await cache.match(request);
+      if (copia) return copia;
+      const respuesta = await fetch(request);
+      if (respuesta.ok || respuesta.type === "opaque") await cache.put(request, respuesta.clone());
+      return respuesta;
+    })());
+    return;
+  }
+
   if (url.origin !== self.location.origin) return;
 
   // Se pide siempre a la red y se guarda la copia, aunque ya se haya respondido con la guardada.

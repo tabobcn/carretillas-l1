@@ -9,6 +9,7 @@
 // POST -> { pin, accion: "codigo_borrar", id } borra un código compartido.
 // POST -> { pin, accion: "reserva", oficial, reserva, faena, avisar } pone una máquina de reserva.
 // POST -> { pin, accion: "quitar_reserva", oficial, avisar } vuelve la máquina oficial.
+// POST -> { pin, accion: "ficha_guardar", faena, descripcion, mantener: [path], nuevas: [jpeg base64] } ficha de faena.
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import * as webpush from "jsr:@negrel/webpush@0.5.0";
 
@@ -19,6 +20,10 @@ const SUSCRIPCIONES = "suscripciones.json";
 const EQUIPO = "equipo.json";
 const CODIGOS = "codigos.json";
 const RESERVAS = "reservas.json";
+const FICHAS = "fichas.json";
+// Las fotos de las fichas van en un bucket público para que se vean sin pedir nada.
+const BUCKET_FOTOS = "fichas";
+const MAX_FOTOS = 6;
 const MAX_CODIGOS = 3000;
 const MAX_SUSCRIPCIONES = 1000;
 // Quien falla la clave 10 veces en 15 minutos se queda bloqueado ese rato (por conexión).
@@ -60,6 +65,7 @@ type Semana = { anio: number; kw: number; publicado: string; datos: unknown };
 type Suscripcion = { endpoint: string; keys: { p256dh: string; auth: string } };
 type Codigo = { id: string; faena: string; nombre: string; codigo: string };
 type Reserva = { oficial: string; reserva: string; faena: string; desde: string };
+type Ficha = { faena: string; descripcion: string; fotos: { path: string; url: string }[]; actualizado: string };
 
 async function leerLista<T>(archivo: string): Promise<T[]> {
   const { data, error } = await supabase.storage.from(BUCKET).download(archivo);
@@ -207,13 +213,14 @@ Deno.serve(async (req) => {
 
   try {
     if (req.method === "GET") {
-      const [semanas, equipo, codigos, reservas] = await Promise.all([
+      const [semanas, equipo, codigos, reservas, fichas] = await Promise.all([
         leerSemanas(),
         leerLista<string>(EQUIPO),
         leerLista<Codigo>(CODIGOS),
         leerLista<Reserva>(RESERVAS),
+        leerLista<Ficha>(FICHAS),
       ]);
-      return responder({ semanas, equipo, codigos, reservas });
+      return responder({ semanas, equipo, codigos, reservas, fichas });
     }
 
     if (req.method === "POST") {
@@ -285,6 +292,38 @@ Deno.serve(async (req) => {
           }
         }
         return responder({ estado: "ok", avisados, reservas: lista.slice(-50) });
+      }
+
+      // Ficha de faena: descripción y fotos (JPEG ya reducidas en el móvil).
+      if (body.accion === "ficha_guardar") {
+        const faena = texto(body.faena, 80);
+        if (!faena) return responder({ estado: "datos" }, 400);
+        const fichas = await leerLista<Ficha>(FICHAS);
+        const anterior = fichas.find((f) => claveMaquina(f.faena) === claveMaquina(faena));
+        const mantener = new Set((Array.isArray(body.mantener) ? body.mantener : []).map(String));
+        const fotos = (anterior?.fotos ?? []).filter((f) => mantener.has(f.path));
+        const nuevas = (Array.isArray(body.nuevas) ? body.nuevas : []).slice(0, Math.max(0, MAX_FOTOS - fotos.length));
+        if (nuevas.length) await supabase.storage.createBucket(BUCKET_FOTOS, { public: true });
+        for (const nueva of nuevas) {
+          const b64 = String(nueva ?? "").replace(/^data:image\/jpeg;base64,/, "");
+          if (b64.length > 2_800_000 || !/^[A-Za-z0-9+/]+=*$/.test(b64)) continue;
+          const bytes = Uint8Array.from(atob(b64), (c) => c.charCodeAt(0));
+          if (bytes[0] !== 0xff || bytes[1] !== 0xd8) continue; // solo JPEG
+          const path = `${crypto.randomUUID()}.jpg`;
+          const { error } = await supabase.storage.from(BUCKET_FOTOS).upload(path, bytes, {
+            contentType: "image/jpeg",
+            cacheControl: "31536000",
+          });
+          if (error) throw error;
+          fotos.push({ path, url: supabase.storage.from(BUCKET_FOTOS).getPublicUrl(path).data.publicUrl });
+        }
+        const quitadas = (anterior?.fotos ?? []).filter((f) => !mantener.has(f.path)).map((f) => f.path);
+        if (quitadas.length) await supabase.storage.from(BUCKET_FOTOS).remove(quitadas);
+        const descripcion = String(body.descripcion ?? "").trim().slice(0, 4000);
+        const lista = fichas.filter((f) => f !== anterior);
+        if (descripcion || fotos.length) lista.push({ faena, descripcion, fotos, actualizado: new Date().toISOString() });
+        await guardarLista(FICHAS, lista);
+        return responder({ estado: "ok", fichas: lista });
       }
 
       if (body.accion === "codigo_guardar" || body.accion === "codigo_borrar") {
