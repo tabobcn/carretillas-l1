@@ -583,6 +583,14 @@
   }
   .btn-primary:disabled{ opacity:.6; cursor:default; }
   .btn-primary:focus-visible{ outline:3px solid var(--accent-2); outline-offset:2px; }
+  .drawer-version{
+    margin-top:auto;
+    padding:12px 10px 0;
+    font-size:.7rem;
+    font-weight:600;
+    color:var(--text-dim);
+    opacity:.75;
+  }
   .drawer-sep{ height:1px; margin:6px 10px 12px; background:var(--border); }
   .page-subtitle{ margin:26px 2px 4px; font-size:1rem; font-weight:800; }
   .publicada{
@@ -1373,12 +1381,15 @@
     <svg aria-hidden="true" viewBox="0 0 24 24" width="19" height="19"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4.5 14.5v4a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
     Hacer cuadrante
   </button>
+  <div class="drawer-version" id="app-version" aria-live="polite"></div>
 </nav>
 
 <div class="app-banner" id="update-banner" role="status" aria-live="polite" hidden>
   <span>Nueva versión disponible</span>
   <button class="update-button" id="update-button" type="button">Actualizar</button>
 </div>
+
+<div class="app-banner" id="version-aviso" role="status" aria-live="polite" hidden></div>
 
 <div class="app-banner" id="offline-banner" role="status" aria-live="polite" hidden>
   Sin conexión · usando la versión guardada
@@ -3381,7 +3392,27 @@
   // Con algo a medio hacer no se recarga sola: se ofrece el botón Actualizar para no perderlo.
   const hayTrabajoSinGuardar = () => (!appViews.subir.hidden && !subirPreview.hidden) || Boolean(qrEditando);
 
+  // Versión: la dice el service worker. Si ha cambiado desde la última vez, se avisa un momento.
+  const appVersion = document.getElementById("app-version");
+  const versionAviso = document.getElementById("version-aviso");
+  function pedirVersion(registro){
+    (navigator.serviceWorker.controller || registro?.active)?.postMessage({ type:"VERSION" });
+  }
+  navigator.serviceWorker?.addEventListener("message", e => {
+    if (e.data?.type !== "VERSION") return;
+    const version = String(e.data.version);
+    appVersion.textContent = `Versión ${version}`;
+    const anterior = leerLocal("cl1-version", null);
+    guardarLocal("cl1-version", version);
+    if (anterior !== null && anterior !== version){
+      versionAviso.textContent = `✅ App actualizada a la versión ${version}`;
+      versionAviso.hidden = false;
+      setTimeout(() => { versionAviso.hidden = true; }, 3500);
+    }
+  });
+
   if ("serviceWorker" in navigator) {
+    navigator.serviceWorker.ready.then(pedirVersion);
     navigator.serviceWorker.addEventListener("controllerchange", () => {
       if (reloadingForUpdate) return;
       if (hayTrabajoSinGuardar() && !updateButton.disabled) {
